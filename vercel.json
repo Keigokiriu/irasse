@@ -1,10 +1,9 @@
 {
-  "headers": [
-    {
-      "source": "/(.*).html",
-      "headers": [
-        { "key": "Content-Type", "value": "text/html; charset=utf-8" }
-      ]
-    }
+  "version": 2,
+  "builds": [
+    { "src": "*.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/", "dest": "/index.html" }
   ]
 }
