@@ -90,6 +90,22 @@ function OrderForm() {
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };
 
+  const handlePayment = async () => {
+    if (orderedItems.length === 0) return;
+    setLoading(true);
+    try {
+      await addDoc(collection(db, 'payments'), {
+        tableNumber,
+        items: orderedItems.map((c) => `${c.name} x${c.qty}`),
+        total: orderedTotal,
+        payMethod,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+      });
+      setPayDone(true);
+    } catch (e) { console.error(e); } finally { setLoading(false); }
+  };
+
   const TAB_STYLE = (active: boolean) => ({
     flex: 1, padding: '10px 4px', fontSize: '12px', fontWeight: 700 as const,
     color: active ? C.amber : C.muted, background: 'transparent', border: 'none',
@@ -286,7 +302,7 @@ function OrderForm() {
                   </button>
                 ))}
               </div>
-              <button onClick={() => setPayDone(true)} disabled={orderedItems.length === 0}
+              <button onClick={handlePayment} disabled={orderedItems.length === 0 || loading}
                 style={{ width: '100%', background: orderedItems.length > 0 ? C.amber : C.faint, border: 'none', color: orderedItems.length > 0 ? C.bg : C.muted, fontSize: '15px', fontWeight: 800, padding: '14px', borderRadius: '12px', cursor: orderedItems.length > 0 ? 'pointer' : 'default', fontFamily: "'Noto Sans JP', sans-serif" }}>
                 💳 この内容でお支払い
               </button>
