@@ -40,6 +40,7 @@ export default function DashboardPage() {
     { label: 'QRコード', desc: 'テーブルごとのQR生成', emoji: '📱', path: '/qr', accent: false },
     { label: 'メニュー管理', desc: 'メニューの追加・削除', emoji: '🍽️', path: '/menu', accent: false },
     { label: '売上管理', desc: '売上・注文履歴の確認', emoji: '📊', path: '/sales', accent: false },
+    { label: 'スタッフ呼び出し', desc: '呼び出し通知をリアルタイム確認', emoji: '🔔', path: '/calls', accent: false },
   ];
 
   return (
