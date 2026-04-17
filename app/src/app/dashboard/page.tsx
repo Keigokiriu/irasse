@@ -42,6 +42,7 @@ export default function DashboardPage() {
     { label: '売上管理', desc: '売上・注文履歴の確認', emoji: '📊', path: '/sales', accent: false },
     { label: 'スタッフ呼び出し', desc: '呼び出し通知をリアルタイム確認', emoji: '🔔', path: '/calls', accent: false },
     { label: 'お会計管理', desc: 'お会計リクエストを確認', emoji: '💳', path: '/payments', accent: false },
+    { label: '待ち行列管理', desc: '混雑状況・ウェイティング管理', emoji: '📋', path: '/waitlist', accent: false },
   ];
 
   return (
