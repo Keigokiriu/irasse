@@ -88,7 +88,7 @@ export default function PaymentsPage() {
                     </span>
                     <span style={{ color: '#94a3b8', fontSize: '12px' }}>{formatTime(payment)}</span>
                   </div>
-                  <p style={{ color: '#f1f5f9', fontSize: '22px', fontWeight: 800, margin: '0 0 6px', color: '#f97316' }}>¥{payment.total.toLocaleString()}</p>
+                  <p style={{ fontSize: '22px', fontWeight: 800, margin: '0 0 6px', color: '#f97316' }}>¥{payment.total.toLocaleString()}</p>
                   <p style={{ color: '#94a3b8', fontSize: '12px', margin: 0 }}>{payment.items.join('、')}</p>
                 </div>
                 <button onClick={() => markDone(payment.id)}
