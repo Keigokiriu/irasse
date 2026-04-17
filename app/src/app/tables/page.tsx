@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, onSnapshot, doc, updateDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, setDoc, deleteDoc, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
@@ -14,6 +14,7 @@ type Table = {
   type: TableType;
   seats: number;
   status: TableStatus;
+  currentSessionId?: string;
 };
 
 const STATUS_LABEL: Record<TableStatus, string> = {
@@ -80,8 +81,40 @@ export default function TablesPage() {
     return () => unsubscribe();
   }, []);
 
-  const updateStatus = async (id: string, status: TableStatus) => {
-    await updateDoc(doc(db, 'tables', id), { status });
+  const updateStatus = async (id: string, currentStatus: TableStatus) => {
+    const nextStatus = NEXT_STATUS[currentStatus];
+    const table = tables.find((t) => t.id === id);
+    if (!table) return;
+
+    if (nextStatus === 'occupied') {
+      // 着席 → 新しいセッションを作成
+      const sessionRef = await addDoc(collection(db, 'sessions'), {
+        tableNumber: table.number,
+        tableId: id,
+        status: 'active',
+        startedAt: serverTimestamp(),
+        closedAt: null,
+        totalAmount: 0,
+      });
+      await updateDoc(doc(db, 'tables', id), {
+        status: nextStatus,
+        currentSessionId: sessionRef.id,
+      });
+    } else if (nextStatus === 'empty') {
+      // 退席 → セッションを閉じる
+      if (table.currentSessionId) {
+        await updateDoc(doc(db, 'sessions', table.currentSessionId), {
+          status: 'closed',
+          closedAt: serverTimestamp(),
+        });
+      }
+      await updateDoc(doc(db, 'tables', id), {
+        status: nextStatus,
+        currentSessionId: null,
+      });
+    } else {
+      await updateDoc(doc(db, 'tables', id), { status: nextStatus });
+    }
   };
 
   const addTable = async () => {
@@ -92,6 +125,7 @@ export default function TablesPage() {
       type: newType,
       seats: newSeats,
       status: 'empty',
+      currentSessionId: null,
     });
     setShowAddModal(false);
   };
@@ -112,7 +146,6 @@ export default function TablesPage() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', fontFamily: "'Noto Sans JP', sans-serif" }}>
-      {/* ヘッダー */}
       <div style={{ backgroundColor: '#1e293b', borderBottom: '1px solid #334155', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button onClick={() => router.push('/dashboard')}
@@ -128,7 +161,6 @@ export default function TablesPage() {
       </div>
 
       <div style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
-        {/* サマリー */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '20px' }}>
           {(Object.keys(STATUS_LABEL) as TableStatus[]).map((s) => (
             <button key={s} onClick={() => setFilterStatus(filterStatus === s ? 'all' : s)}
@@ -139,7 +171,6 @@ export default function TablesPage() {
           ))}
         </div>
 
-        {/* 会計待ち・案内OK のアラート */}
         {(stats.billing > 0 || stats.leaving > 0) && (
           <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {stats.billing > 0 && (
@@ -157,7 +188,6 @@ export default function TablesPage() {
           </div>
         )}
 
-        {/* テーブルグリッド */}
         {tables.length === 0 ? (
           <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '48px', textAlign: 'center' }}>
             <p style={{ color: '#64748b', margin: 0 }}>テーブルがまだありません。「＋ 追加」から追加してください。</p>
@@ -167,7 +197,6 @@ export default function TablesPage() {
             {filteredTables.map((table) => (
               <div key={table.id}
                 style={{ background: STATUS_BG[table.status], border: `1px solid ${STATUS_COLOR[table.status]}`, borderRadius: '14px', padding: '16px', textAlign: 'center', position: 'relative' }}>
-                {/* 削除ボタン */}
                 <button onClick={() => deleteTable(table.id)}
                   style={{ position: 'absolute', top: '6px', right: '6px', background: 'transparent', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer', padding: '2px' }}>
                   ✕
@@ -179,7 +208,7 @@ export default function TablesPage() {
                 <div style={{ background: STATUS_COLOR[table.status] + '22', borderRadius: '8px', padding: '4px 6px', marginBottom: '10px' }}>
                   <span style={{ color: STATUS_COLOR[table.status], fontSize: '10px', fontWeight: 700 }}>{STATUS_LABEL[table.status]}</span>
                 </div>
-                <button onClick={() => updateStatus(table.id, NEXT_STATUS[table.status])}
+                <button onClick={() => updateStatus(table.id, table.status)}
                   style={{ width: '100%', background: STATUS_COLOR[table.status], border: 'none', color: '#fff', fontSize: '11px', fontWeight: 700, padding: '7px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
                   {NEXT_STATUS[table.status] === 'empty' ? '退店済み →' :
                    NEXT_STATUS[table.status] === 'occupied' ? '着席 →' :
@@ -192,12 +221,10 @@ export default function TablesPage() {
         )}
       </div>
 
-      {/* 追加モーダル */}
       {showAddModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}>
           <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '20px', padding: '24px', width: '100%', maxWidth: '360px' }}>
             <h2 style={{ color: '#f1f5f9', fontSize: '17px', fontWeight: 800, margin: '0 0 20px' }}>席を追加</h2>
-
             <div style={{ marginBottom: '16px' }}>
               <label style={{ color: '#94a3b8', fontSize: '12px', display: 'block', marginBottom: '8px' }}>種類</label>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -209,7 +236,6 @@ export default function TablesPage() {
                 ))}
               </div>
             </div>
-
             <div style={{ marginBottom: '24px' }}>
               <label style={{ color: '#94a3b8', fontSize: '12px', display: 'block', marginBottom: '8px' }}>席数</label>
               <div style={{ display: 'flex', gap: '6px' }}>
@@ -221,7 +247,6 @@ export default function TablesPage() {
                 ))}
               </div>
             </div>
-
             <div style={{ display: 'flex', gap: '10px' }}>
               <button onClick={() => setShowAddModal(false)}
                 style={{ flex: 1, background: '#0f172a', border: '1px solid #334155', color: '#64748b', fontSize: '14px', fontWeight: 700, padding: '12px', borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>

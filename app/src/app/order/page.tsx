@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { collection, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, onSnapshot, getDocs, getDoc, updateDoc, query, where, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 const TR = {
@@ -176,10 +176,30 @@ function OrderForm() {
     if (cartItems.length === 0) return;
     setLoading(true);
     try {
+      const tablesSnapshot = await getDocs(
+        query(collection(db, 'tables'), where('number', '==', tableNumber))
+      );
+      const tableDoc = tablesSnapshot.docs[0];
+      const sessionId = tableDoc?.data()?.currentSessionId || null;
+
       await addDoc(collection(db, 'orders'), {
-        tableNumber, items: cartItems.map((c) => `${c.name} x${c.qty}`),
-        status: 'pending', createdAt: serverTimestamp(),
+        tableNumber,
+        sessionId,
+        items: cartItems.map((c) => `${c.name} x${c.qty}`),
+        status: 'pending',
+        createdAt: serverTimestamp(),
       });
+
+      if (sessionId) {
+        const sessionDoc = await getDoc(doc(db, 'sessions', sessionId));
+        if (sessionDoc.exists()) {
+          const currentTotal = sessionDoc.data().totalAmount || 0;
+          await updateDoc(doc(db, 'sessions', sessionId), {
+            totalAmount: currentTotal + total,
+          });
+        }
+      }
+
       setOrderedItems(cartItems);
       setOrderedTotal(total);
       setOrderStep('done');

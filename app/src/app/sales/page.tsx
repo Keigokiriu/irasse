@@ -8,18 +8,31 @@ import { useRouter } from 'next/navigation';
 type Order = {
   id: string;
   tableNumber: number;
+  sessionId: string | null;
   items: string[];
   status: 'pending' | 'preparing' | 'done';
   createdAt: Date;
 };
 
+type Session = {
+  id: string;
+  tableNumber: number;
+  tableId: string;
+  status: 'active' | 'closed';
+  startedAt: Date;
+  closedAt: Date | null;
+  totalAmount: number;
+};
+
 export default function SalesPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [menuPrices, setMenuPrices] = useState<{ [name: string]: number }>({});
+  const [activeTab, setActiveTab] = useState<'overview' | 'sessions' | 'menu'>('overview');
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribeMenu = onSnapshot(collection(db, 'menu'), (snapshot) => {
+    const unsubMenu = onSnapshot(collection(db, 'menu'), (snapshot) => {
       const prices: { [name: string]: number } = {};
       snapshot.docs.forEach((doc) => {
         const data = doc.data();
@@ -28,8 +41,8 @@ export default function SalesPage() {
       setMenuPrices(prices);
     });
 
-    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
-    const unsubscribeOrders = onSnapshot(q, (snapshot) => {
+    const qOrders = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+    const unsubOrders = onSnapshot(qOrders, (snapshot) => {
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -38,79 +51,245 @@ export default function SalesPage() {
       setOrders(data);
     });
 
-    return () => {
-      unsubscribeMenu();
-      unsubscribeOrders();
-    };
+    const qSessions = query(collection(db, 'sessions'), orderBy('startedAt', 'desc'));
+    const unsubSessions = onSnapshot(qSessions, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        startedAt: doc.data().startedAt?.toDate(),
+        closedAt: doc.data().closedAt?.toDate() || null,
+      })) as Session[];
+      setSessions(data);
+    });
+
+    return () => { unsubMenu(); unsubOrders(); unsubSessions(); };
   }, []);
 
   const calcOrderTotal = (items: string[]) => {
     return items.reduce((sum, item) => {
       const match = item.match(/^(.+) x(\d+)$/);
       if (!match) return sum;
-      const name = match[1];
-      const qty = Number(match[2]);
-      return sum + (menuPrices[name] || 0) * qty;
+      return sum + (menuPrices[match[1]] || 0) * Number(match[2]);
     }, 0);
   };
 
-  const doneOrders = orders.filter((o) => o.status === 'done');
-  const totalSales = doneOrders.reduce((sum, o) => sum + calcOrderTotal(o.items), 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  const statusColor = {
-    pending: { border: '#EAB308', bg: 'rgba(234,179,8,0.2)', text: '#EAB308', label: '未対応' },
-    preparing: { border: '#3B82F6', bg: 'rgba(59,130,246,0.2)', text: '#3B82F6', label: '調理中' },
-    done: { border: '#22C55E', bg: 'rgba(34,197,94,0.2)', text: '#22C55E', label: '完了' },
+  const todayOrders = orders.filter((o) => o.createdAt && o.createdAt >= today);
+  const doneOrders = orders.filter((o) => o.status === 'done');
+  const todayDoneOrders = todayOrders.filter((o) => o.status === 'done');
+  const todaySales = todayDoneOrders.reduce((sum, o) => sum + calcOrderTotal(o.items), 0);
+  const totalSales = doneOrders.reduce((sum, o) => sum + calcOrderTotal(o.items), 0);
+  const avgOrder = doneOrders.length > 0 ? Math.round(totalSales / doneOrders.length) : 0;
+
+  const closedSessions = sessions.filter((s) => s.status === 'closed');
+  const todaySessions = closedSessions.filter((s) => s.startedAt && s.startedAt >= today);
+
+  // セッションごとの注文をグループ化
+  const getSessionOrders = (sessionId: string) =>
+    orders.filter((o) => o.sessionId === sessionId);
+
+  const getSessionTotal = (sessionId: string) =>
+    getSessionOrders(sessionId).reduce((sum, o) => sum + calcOrderTotal(o.items), 0);
+
+  const getSessionItems = (sessionId: string) => {
+    const itemMap: { [name: string]: number } = {};
+    getSessionOrders(sessionId).forEach((order) => {
+      order.items.forEach((item) => {
+        const match = item.match(/^(.+) x(\d+)$/);
+        if (match) {
+          itemMap[match[1]] = (itemMap[match[1]] || 0) + Number(match[2]);
+        }
+      });
+    });
+    return Object.entries(itemMap).map(([name, qty]) => `${name} x${qty}`);
   };
 
+  // メニュー別集計
+  const menuStats: { [name: string]: { qty: number; total: number } } = {};
+  doneOrders.forEach((order) => {
+    order.items.forEach((item) => {
+      const match = item.match(/^(.+) x(\d+)$/);
+      if (!match) return;
+      const name = match[1];
+      const qty = Number(match[2]);
+      if (!menuStats[name]) menuStats[name] = { qty: 0, total: 0 };
+      menuStats[name].qty += qty;
+      menuStats[name].total += (menuPrices[name] || 0) * qty;
+    });
+  });
+  const menuRanking = Object.entries(menuStats)
+    .map(([name, s]) => ({ name, ...s }))
+    .sort((a, b) => b.total - a.total);
+  const maxMenuTotal = menuRanking[0]?.total || 1;
+
+  const formatTime = (date: Date | null) => {
+    if (!date) return '';
+    return date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const TAB = (active: boolean) => ({
+    flex: 1, padding: '10px 4px', fontSize: '13px', fontWeight: 700 as const,
+    color: active ? '#f97316' : '#64748b', background: 'transparent', border: 'none',
+    borderBottom: active ? '2px solid #f97316' : '2px solid transparent',
+    cursor: 'pointer', fontFamily: 'inherit',
+  });
+
   return (
-    <div className="min-h-screen" style={{ background: '#1E293B' }}>
-      <div style={{ background: '#0F172A', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <button
-          onClick={() => router.push('/dashboard')}
-          style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'rgba(255,255,255,0.85)', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
-        >
-          ← 戻る
+    <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', fontFamily: "'Noto Sans JP', sans-serif" }}>
+      {/* ヘッダー */}
+      <div style={{ backgroundColor: '#1e293b', borderBottom: '1px solid #334155', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <button onClick={() => router.push('/dashboard')}
+          style={{ background: 'transparent', border: 'none', color: '#f97316', fontSize: '14px', cursor: 'pointer', fontWeight: 700 }}>
+          ← ダッシュボード
         </button>
-        <p style={{ color: 'white', fontWeight: '700', fontSize: '16px', margin: 0 }}>売上管理</p>
+        <h1 style={{ color: '#f1f5f9', fontSize: '18px', fontWeight: 800, margin: 0 }}>📊 売上管理</h1>
       </div>
 
-      <div style={{ padding: '16px 20px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
-          <div style={{ background: '#0F172A', borderRadius: '14px', padding: '16px', textAlign: 'center', borderTop: '4px solid #EA580C' }}>
-            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px', fontWeight: '600', margin: '0 0 6px' }}>総売上（完了分）</p>
-            <p style={{ color: '#EA580C', fontWeight: '700', fontSize: '22px', margin: 0 }}>¥{totalSales.toLocaleString()}</p>
-          </div>
-          <div style={{ background: '#0F172A', borderRadius: '14px', padding: '16px', textAlign: 'center', borderTop: '4px solid #3B82F6' }}>
-            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px', fontWeight: '600', margin: '0 0 6px' }}>総注文数</p>
-            <p style={{ color: 'white', fontWeight: '700', fontSize: '22px', margin: 0 }}>{orders.length}</p>
-          </div>
-          <div style={{ background: '#0F172A', borderRadius: '14px', padding: '16px', textAlign: 'center', borderTop: '4px solid #22C55E' }}>
-            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px', fontWeight: '600', margin: '0 0 6px' }}>完了注文数</p>
-            <p style={{ color: '#22C55E', fontWeight: '700', fontSize: '22px', margin: 0 }}>{doneOrders.length}</p>
-          </div>
-        </div>
+      {/* タブ */}
+      <div style={{ backgroundColor: '#1e293b', borderBottom: '1px solid #334155', display: 'flex' }}>
+        <button style={TAB(activeTab === 'overview')} onClick={() => setActiveTab('overview')}>概要</button>
+        <button style={TAB(activeTab === 'sessions')} onClick={() => setActiveTab('sessions')}>セッション履歴</button>
+        <button style={TAB(activeTab === 'menu')} onClick={() => setActiveTab('menu')}>メニュー別</button>
+      </div>
 
-        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '14px', fontWeight: '600', margin: '0 0 10px' }}>注文履歴</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {orders.map((order) => (
-            <div
-              key={order.id}
-              style={{ background: '#0F172A', borderRadius: '12px', padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: `4px solid ${statusColor[order.status].border}` }}
-            >
-              <div>
-                <p style={{ color: 'white', fontWeight: '600', fontSize: '15px', margin: '0 0 2px' }}>テーブル {order.tableNumber}</p>
-                <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '13px', margin: 0 }}>{order.items.join('・')}</p>
+      <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+
+        {/* 概要タブ */}
+        {activeTab === 'overview' && (
+          <div>
+            <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 700, margin: '0 0 12px', letterSpacing: '0.05em' }}>本日の売上</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+              <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '16px', borderTop: '3px solid #f97316' }}>
+                <p style={{ color: '#94a3b8', fontSize: '12px', margin: '0 0 6px' }}>本日売上</p>
+                <p style={{ color: '#f97316', fontWeight: 800, fontSize: '24px', margin: 0 }}>¥{todaySales.toLocaleString()}</p>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ color: '#EA580C', fontWeight: '700', fontSize: '15px', margin: '0 0 4px' }}>¥{calcOrderTotal(order.items).toLocaleString()}</p>
-                <span style={{ background: statusColor[order.status].bg, color: statusColor[order.status].text, fontSize: '11px', padding: '3px 10px', borderRadius: '20px', fontWeight: '600' }}>
-                  {statusColor[order.status].label}
-                </span>
+              <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '16px', borderTop: '3px solid #22c55e' }}>
+                <p style={{ color: '#94a3b8', fontSize: '12px', margin: '0 0 6px' }}>本日セッション数</p>
+                <p style={{ color: '#22c55e', fontWeight: 800, fontSize: '24px', margin: 0 }}>{todaySessions.length}組</p>
               </div>
             </div>
-          ))}
-        </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+              <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '14px' }}>
+                <p style={{ color: '#94a3b8', fontSize: '11px', margin: '0 0 4px' }}>累計売上</p>
+                <p style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '16px', margin: 0 }}>¥{totalSales.toLocaleString()}</p>
+              </div>
+              <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '14px' }}>
+                <p style={{ color: '#94a3b8', fontSize: '11px', margin: '0 0 4px' }}>平均客単価</p>
+                <p style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '16px', margin: 0 }}>¥{avgOrder.toLocaleString()}</p>
+              </div>
+              <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '14px' }}>
+                <p style={{ color: '#94a3b8', fontSize: '11px', margin: '0 0 4px' }}>累計セッション</p>
+                <p style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '16px', margin: 0 }}>{closedSessions.length}組</p>
+              </div>
+            </div>
+
+            {/* アクティブセッション */}
+            {sessions.filter((s) => s.status === 'active').length > 0 && (
+              <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
+                <p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700, margin: '0 0 12px' }}>現在着席中</p>
+                {sessions.filter((s) => s.status === 'active').map((session) => (
+                  <div key={session.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #334155' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ background: '#f97316', color: '#fff', borderRadius: '6px', padding: '2px 8px', fontSize: '11px', fontWeight: 700 }}>
+                        テーブル {session.tableNumber}
+                      </span>
+                      <span style={{ color: '#64748b', fontSize: '11px' }}>{formatTime(session.startedAt)}〜</span>
+                    </div>
+                    <span style={{ color: '#f97316', fontSize: '13px', fontWeight: 700 }}>
+                      ¥{getSessionTotal(session.id).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* セッション履歴タブ */}
+        {activeTab === 'sessions' && (
+          <div>
+            <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 700, margin: '0 0 12px', letterSpacing: '0.05em' }}>
+              セッション履歴（着席〜退席ごとの記録）
+            </p>
+            {closedSessions.length === 0 ? (
+              <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '32px', textAlign: 'center' }}>
+                <p style={{ color: '#64748b', margin: 0 }}>まだセッションの記録がありません</p>
+              </div>
+            ) : closedSessions.map((session, i) => {
+              const sessionTotal = getSessionTotal(session.id);
+              const sessionItems = getSessionItems(session.id);
+              return (
+                <div key={session.id} style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '16px', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <span style={{ background: '#f97316', color: '#fff', borderRadius: '6px', padding: '2px 10px', fontSize: '12px', fontWeight: 700 }}>
+                          テーブル {session.tableNumber}
+                        </span>
+                        <span style={{ color: '#64748b', fontSize: '11px' }}>
+                          {formatTime(session.startedAt)} 〜 {formatTime(session.closedAt)}
+                        </span>
+                      </div>
+                      <p style={{ color: '#94a3b8', fontSize: '12px', margin: 0 }}>
+                        {sessionItems.length > 0 ? sessionItems.join('・') : '注文なし'}
+                      </p>
+                    </div>
+                    <p style={{ color: '#f97316', fontWeight: 800, fontSize: '18px', margin: 0 }}>
+                      ¥{sessionTotal.toLocaleString()}
+                    </p>
+                  </div>
+                  {getSessionOrders(session.id).length > 1 && (
+                    <div style={{ borderTop: '1px solid #334155', paddingTop: '10px' }}>
+                      <p style={{ color: '#64748b', fontSize: '11px', margin: '0 0 6px' }}>注文履歴</p>
+                      {getSessionOrders(session.id).map((order, j) => (
+                        <div key={order.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
+                          <span style={{ color: '#94a3b8', fontSize: '11px' }}>
+                            {formatTime(order.createdAt)} {order.items.join('・')}
+                          </span>
+                          <span style={{ color: '#64748b', fontSize: '11px' }}>
+                            ¥{calcOrderTotal(order.items).toLocaleString()}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* メニュー別タブ */}
+        {activeTab === 'menu' && (
+          <div>
+            <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 700, margin: '0 0 12px', letterSpacing: '0.05em' }}>メニュー別売上ランキング</p>
+            {menuRanking.length === 0 ? (
+              <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '32px', textAlign: 'center' }}>
+                <p style={{ color: '#64748b', margin: 0 }}>完了した注文がありません</p>
+              </div>
+            ) : menuRanking.map((item, i) => (
+              <div key={item.name} style={{ background: '#1e293b', border: `1px solid ${i === 0 ? '#f97316' : '#334155'}`, borderRadius: '14px', padding: '14px 16px', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ background: i === 0 ? '#f97316' : i === 1 ? '#94a3b8' : i === 2 ? '#b45309' : '#334155', color: '#fff', borderRadius: '6px', padding: '2px 8px', fontSize: '11px', fontWeight: 700 }}>
+                      {i + 1}位
+                    </span>
+                    <span style={{ color: '#f1f5f9', fontSize: '14px', fontWeight: 700 }}>{item.name}</span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ color: '#f97316', fontWeight: 700, fontSize: '15px', margin: '0 0 2px' }}>¥{item.total.toLocaleString()}</p>
+                    <p style={{ color: '#64748b', fontSize: '11px', margin: 0 }}>{item.qty}個販売</p>
+                  </div>
+                </div>
+                <div style={{ background: '#0f172a', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', background: i === 0 ? '#f97316' : '#334155', width: `${(item.total / maxMenuTotal) * 100}%`, borderRadius: '4px' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
