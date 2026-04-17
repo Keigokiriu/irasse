@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
 type TableType = 'table' | 'counter' | 'room';
-type TableStatus = 'empty' | 'occupied' | 'billing' | 'paid' | 'leaving';
+type TableStatus = 'empty' | 'occupied' | 'billing' | 'paid';
 
 type Table = {
   id: string;
@@ -21,32 +21,28 @@ const STATUS_LABEL: Record<TableStatus, string> = {
   empty: '空席',
   occupied: '着席中',
   billing: '会計待ち',
-  paid: '会計済・退店待ち',
-  leaving: '案内OK',
+  paid: '会計済・案内OK',
 };
 
 const STATUS_COLOR: Record<TableStatus, string> = {
   empty: '#22c55e',
   occupied: '#3b82f6',
   billing: '#f59e0b',
-  paid: '#a855f7',
-  leaving: '#f97316',
+  paid: '#f97316',
 };
 
 const STATUS_BG: Record<TableStatus, string> = {
   empty: '#052e16',
   occupied: '#1e3a5f',
   billing: '#2a1f08',
-  paid: '#2e1065',
-  leaving: '#1c0a00',
+  paid: '#1c0a00',
 };
 
 const NEXT_STATUS: Record<TableStatus, TableStatus> = {
   empty: 'occupied',
   occupied: 'billing',
   billing: 'paid',
-  paid: 'leaving',
-  leaving: 'empty',
+  paid: 'empty',
 };
 
 const TYPE_LABEL: Record<TableType, string> = {
@@ -87,7 +83,6 @@ export default function TablesPage() {
     if (!table) return;
 
     if (nextStatus === 'occupied') {
-      // 着席 → 新しいセッションを作成
       const sessionRef = await addDoc(collection(db, 'sessions'), {
         tableNumber: table.number,
         tableId: id,
@@ -101,7 +96,6 @@ export default function TablesPage() {
         currentSessionId: sessionRef.id,
       });
     } else if (nextStatus === 'empty') {
-      // 退席 → セッションを閉じる
       if (table.currentSessionId) {
         await updateDoc(doc(db, 'sessions', table.currentSessionId), {
           status: 'closed',
@@ -141,7 +135,6 @@ export default function TablesPage() {
     occupied: tables.filter((t) => t.status === 'occupied').length,
     billing: tables.filter((t) => t.status === 'billing').length,
     paid: tables.filter((t) => t.status === 'paid').length,
-    leaving: tables.filter((t) => t.status === 'leaving').length,
   };
 
   return (
@@ -161,7 +154,7 @@ export default function TablesPage() {
       </div>
 
       <div style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '20px' }}>
           {(Object.keys(STATUS_LABEL) as TableStatus[]).map((s) => (
             <button key={s} onClick={() => setFilterStatus(filterStatus === s ? 'all' : s)}
               style={{ background: filterStatus === s ? STATUS_BG[s] : '#1e293b', border: `1px solid ${filterStatus === s ? STATUS_COLOR[s] : '#334155'}`, borderRadius: '10px', padding: '10px 8px', textAlign: 'center', cursor: 'pointer' }}>
@@ -171,20 +164,21 @@ export default function TablesPage() {
           ))}
         </div>
 
-        {(stats.billing > 0 || stats.leaving > 0) && (
-          <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {stats.billing > 0 && (
-              <div style={{ background: '#2a1f08', border: '1px solid #f59e0b', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '16px' }}>💳</span>
-                <span style={{ color: '#f59e0b', fontSize: '13px', fontWeight: 700 }}>{stats.billing}卓が会計待ちです</span>
-              </div>
-            )}
-            {stats.leaving > 0 && (
-              <div style={{ background: '#1c0a00', border: '1px solid #f97316', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '16px' }}>✅</span>
-                <span style={{ color: '#f97316', fontSize: '13px', fontWeight: 700 }}>{stats.leaving}卓が案内OKです</span>
-              </div>
-            )}
+        {stats.billing > 0 && (
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ background: '#2a1f08', border: '1px solid #f59e0b', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '16px' }}>💳</span>
+              <span style={{ color: '#f59e0b', fontSize: '13px', fontWeight: 700 }}>{stats.billing}卓が会計待ちです</span>
+            </div>
+          </div>
+        )}
+
+        {stats.paid > 0 && (
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ background: '#1c0a00', border: '1px solid #f97316', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '16px' }}>✅</span>
+              <span style={{ color: '#f97316', fontSize: '13px', fontWeight: 700 }}>{stats.paid}卓が案内OKです</span>
+            </div>
           </div>
         )}
 
@@ -210,10 +204,9 @@ export default function TablesPage() {
                 </div>
                 <button onClick={() => updateStatus(table.id, table.status)}
                   style={{ width: '100%', background: STATUS_COLOR[table.status], border: 'none', color: '#fff', fontSize: '11px', fontWeight: 700, padding: '7px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                  {NEXT_STATUS[table.status] === 'empty' ? '退店済み →' :
+                  {NEXT_STATUS[table.status] === 'empty' ? '退店済み・案内OK →' :
                    NEXT_STATUS[table.status] === 'occupied' ? '着席 →' :
-                   NEXT_STATUS[table.status] === 'billing' ? '会計待ち →' :
-                   NEXT_STATUS[table.status] === 'paid' ? '会計済み →' : '案内OK →'}
+                   NEXT_STATUS[table.status] === 'billing' ? '会計待ち →' : '会計済み →'}
                 </button>
               </div>
             ))}
