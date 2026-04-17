@@ -5,30 +5,104 @@ import { useSearchParams } from 'next/navigation';
 import { collection, addDoc, serverTimestamp, onSnapshot, doc, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
+const TR = {
+  ja: {
+    title: 'Irasse', congestion: '現在の混雑状況',
+    crowded: '🔴 混雑', moderate: '🟡 やや混雑', available: '🟢 余裕あり',
+    seats: '席', full: '❌ 現在満席です',
+    enterNow: 'このまま入店して注文する →',
+    waitingList: 'ウェイティングリスト',
+    othersWaiting: '組 待ち',
+    joinWaitlist: '📋 ウェイティングリストに追加する',
+    registerTitle: '順番待ちに登録', back: '← 戻る',
+    yourName: 'お名前', namePlaceholder: '例：田中',
+    partySize: '人数', register: '登録する', registering: '登録中...',
+    currentPosition: '現在の順番', positionSuffix: '番目',
+    nameLabel: 'お名前', nameSuffix: '様',
+    partySizeLabel: '人数', partySizeSuffix: '名',
+    estimatedWait: '待ち時間の目安', approx: '約', minutes: '分',
+    waitNote: '順番が来たらこの画面に通知が届きます。\n近くでお待ちください。',
+    seatReady: 'お席の準備ができました！',
+    seatReadySub: 'スタッフにお声がけください',
+    enterAndOrder: '入店して注文する →',
+  },
+  en: {
+    title: 'Irasse', congestion: 'Current Availability',
+    crowded: '🔴 Busy', moderate: '🟡 Moderate', available: '🟢 Available',
+    seats: 'seats', full: '❌ Currently Full',
+    enterNow: 'Enter & Order →',
+    waitingList: 'Waiting List',
+    othersWaiting: ' groups waiting',
+    joinWaitlist: '📋 Join the Waiting List',
+    registerTitle: 'Join Waiting List', back: '← Back',
+    yourName: 'Your Name', namePlaceholder: 'e.g. Smith',
+    partySize: 'Party Size', register: 'Join', registering: 'Joining...',
+    currentPosition: 'Your Position', positionSuffix: '',
+    nameLabel: 'Name', nameSuffix: '',
+    partySizeLabel: 'Party', partySizeSuffix: ' guests',
+    estimatedWait: 'Estimated Wait', approx: '~', minutes: ' min',
+    waitNote: 'We\'ll notify you on this screen when your table is ready.\nPlease stay nearby.',
+    seatReady: 'Your table is ready!',
+    seatReadySub: 'Please speak to a staff member',
+    enterAndOrder: 'Enter & Order →',
+  },
+  ko: {
+    title: 'Irasse', congestion: '현재 혼잡 상황',
+    crowded: '🔴 혼잡', moderate: '🟡 보통', available: '🟢 여유',
+    seats: '석', full: '❌ 현재 만석입니다',
+    enterNow: '입장하여 주문하기 →',
+    waitingList: '웨이팅 리스트',
+    othersWaiting: '팀 대기 중',
+    joinWaitlist: '📋 웨이팅 리스트에 등록',
+    registerTitle: '대기 등록', back: '← 뒤로',
+    yourName: '성함', namePlaceholder: '예: 김철수',
+    partySize: '인원', register: '등록하기', registering: '등록 중...',
+    currentPosition: '현재 순서', positionSuffix: '번째',
+    nameLabel: '성함', nameSuffix: '님',
+    partySizeLabel: '인원', partySizeSuffix: '명',
+    estimatedWait: '예상 대기 시간', approx: '약', minutes: '분',
+    waitNote: '순서가 되면 이 화면에 알림이 옵니다.\n근처에서 기다려 주세요.',
+    seatReady: '자리가 준비되었습니다!',
+    seatReadySub: '직원에게 말씀해 주세요',
+    enterAndOrder: '입장하여 주문하기 →',
+  },
+  zh: {
+    title: 'Irasse', congestion: '当前拥挤状况',
+    crowded: '🔴 拥挤', moderate: '🟡 较忙', available: '🟢 宽松',
+    seats: '席', full: '❌ 当前已满座',
+    enterNow: '直接入座点餐 →',
+    waitingList: '等位列表',
+    othersWaiting: '组等待中',
+    joinWaitlist: '📋 加入等位列表',
+    registerTitle: '等位登记', back: '← 返回',
+    yourName: '姓名', namePlaceholder: '例：张三',
+    partySize: '人数', register: '登记', registering: '登记中...',
+    currentPosition: '当前顺序', positionSuffix: '号',
+    nameLabel: '姓名', nameSuffix: '先生/女士',
+    partySizeLabel: '人数', partySizeSuffix: '位',
+    estimatedWait: '预计等待时间', approx: '约', minutes: '分钟',
+    waitNote: '轮到您时，此屏幕会收到通知。\n请在附近等候。',
+    seatReady: '您的座位已准备好！',
+    seatReadySub: '请告知工作人员',
+    enterAndOrder: '入座点餐 →',
+  },
+};
+
+type Lang = 'ja' | 'en' | 'ko' | 'zh';
+
 const C = {
   bg: '#09090b', surf: '#111113', bdr: '#222226',
   txt: '#ffffff', muted: '#888891', amber: '#ff8c38',
   amberD: '#1c0a00', amberM: '#ff6b00', faint: '#18181b',
 };
 
-type StoreStatus = {
-  totalSeats: number;
-  occupiedSeats: number;
-  isOpen: boolean;
-};
-
-type WaitlistEntry = {
-  id: string;
-  name: string;
-  partySize: number;
-  status: 'waiting' | 'ready' | 'seated';
-  position: number;
-  createdAt: { seconds: number } | null;
-};
+type StoreStatus = { totalSeats: number; occupiedSeats: number; isOpen: boolean; };
+type WaitlistEntry = { id: string; name: string; partySize: number; status: 'waiting' | 'ready' | 'seated'; position: number; createdAt: { seconds: number } | null; };
 
 function WaitingForm() {
   const searchParams = useSearchParams();
-  const storeId = searchParams.get('store') || 'main';
+  const [lang, setLang] = useState<Lang>('ja');
+  const t = TR[lang];
   const [storeStatus, setStoreStatus] = useState<StoreStatus | null>(null);
   const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
   const [myEntry, setMyEntry] = useState<WaitlistEntry | null>(null);
@@ -44,9 +118,7 @@ function WaitingForm() {
     });
     const q = query(collection(db, 'waitlist'), orderBy('createdAt', 'asc'));
     const unsubWait = onSnapshot(q, (snap) => {
-      const data = snap.docs.map((d, i) => ({
-        id: d.id, ...d.data(), position: i + 1,
-      })) as WaitlistEntry[];
+      const data = snap.docs.map((d, i) => ({ id: d.id, ...d.data(), position: i + 1 })) as WaitlistEntry[];
       setWaitlist(data);
       if (myEntryId) {
         const found = data.find((e) => e.id === myEntryId);
@@ -73,66 +145,86 @@ function WaitingForm() {
   const estimatedWait = myPosition * 15;
   const availableSeats = storeStatus ? storeStatus.totalSeats - storeStatus.occupiedSeats : 0;
   const congestionRate = storeStatus ? storeStatus.occupiedSeats / storeStatus.totalSeats : 0;
-  const congestionLabel = congestionRate >= 0.9 ? '🔴 混雑' : congestionRate >= 0.6 ? '🟡 やや混雑' : '🟢 余裕あり';
+  const congestionLabel = congestionRate >= 0.9 ? t.crowded : congestionRate >= 0.6 ? t.moderate : t.available;
   const congestionColor = congestionRate >= 0.9 ? '#ef4444' : congestionRate >= 0.6 ? '#f59e0b' : '#22c55e';
 
+  const LangButtons = () => (
+    <div style={{ display: 'flex', gap: '4px' }}>
+      {(['ja', 'en', 'ko', 'zh'] as Lang[]).map((l) => (
+        <button key={l} onClick={() => setLang(l)}
+          style={{ background: lang === l ? C.amberD : C.faint, border: `1px solid ${lang === l ? C.amberM : C.bdr}`, borderRadius: '6px', padding: '4px 6px', color: lang === l ? C.amber : C.muted, fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+          {l === 'ja' ? '🇯🇵' : l === 'en' ? '🇺🇸' : l === 'ko' ? '🇰🇷' : '🇨🇳'}
+        </button>
+      ))}
+    </div>
+  );
+
   if (step === 'waiting' && myEntry) return (
-    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: "'Noto Sans JP', sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ padding: '32px 24px', width: '100%', maxWidth: '400px' }}>
-        {myEntry.status === 'ready' ? (
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '56px', marginBottom: '16px' }}>🔔</div>
-            <div style={{ fontSize: '22px', fontWeight: 800, color: C.txt, marginBottom: '8px' }}>お席の準備ができました！</div>
-            <div style={{ fontSize: '13px', color: C.muted, marginBottom: '28px' }}>スタッフにお声がけください</div>
-            <button onClick={() => window.location.href = `/order?table=1`}
-              style={{ width: '100%', background: C.amber, border: 'none', color: C.bg, fontSize: '15px', fontWeight: 800, padding: '14px', borderRadius: '12px', cursor: 'pointer' }}>
-              入店して注文する →
-            </button>
-          </div>
-        ) : (
-          <div>
-            <div style={{ background: C.surf, border: `1px solid ${C.bdr}`, borderRadius: '16px', padding: '24px', textAlign: 'center', marginBottom: '16px' }}>
-              <div style={{ fontSize: '13px', color: C.muted, marginBottom: '8px' }}>現在の順番</div>
-              <div style={{ fontSize: '64px', fontWeight: 800, color: C.amber, lineHeight: 1 }}>{myPosition}</div>
-              <div style={{ fontSize: '16px', color: C.muted, marginTop: '4px' }}>番目</div>
+    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: "'Noto Sans JP', sans-serif" }}>
+      <div style={{ background: C.surf, borderBottom: `1px solid ${C.bdr}`, padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: '18px', fontWeight: 800, color: C.txt }}>{t.title}</div>
+        <LangButtons />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 24px' }}>
+        <div style={{ width: '100%', maxWidth: '400px' }}>
+          {myEntry.status === 'ready' ? (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '56px', marginBottom: '16px' }}>🔔</div>
+              <div style={{ fontSize: '22px', fontWeight: 800, color: C.txt, marginBottom: '8px' }}>{t.seatReady}</div>
+              <div style={{ fontSize: '13px', color: C.muted, marginBottom: '28px' }}>{t.seatReadySub}</div>
+              <button onClick={() => window.location.href = `/order?table=1`}
+                style={{ width: '100%', background: C.amber, border: 'none', color: C.bg, fontSize: '15px', fontWeight: 800, padding: '14px', borderRadius: '12px', cursor: 'pointer' }}>
+                {t.enterAndOrder}
+              </button>
             </div>
-            <div style={{ background: C.surf, border: `1px solid ${C.bdr}`, borderRadius: '16px', padding: '20px', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <span style={{ color: C.muted, fontSize: '13px' }}>お名前</span>
-                <span style={{ color: C.txt, fontSize: '13px', fontWeight: 700 }}>{myEntry.name} 様</span>
+          ) : (
+            <div>
+              <div style={{ background: C.surf, border: `1px solid ${C.bdr}`, borderRadius: '16px', padding: '24px', textAlign: 'center', marginBottom: '16px' }}>
+                <div style={{ fontSize: '13px', color: C.muted, marginBottom: '8px' }}>{t.currentPosition}</div>
+                <div style={{ fontSize: '64px', fontWeight: 800, color: C.amber, lineHeight: 1 }}>{myPosition}</div>
+                <div style={{ fontSize: '16px', color: C.muted, marginTop: '4px' }}>{t.positionSuffix}</div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <span style={{ color: C.muted, fontSize: '13px' }}>人数</span>
-                <span style={{ color: C.txt, fontSize: '13px', fontWeight: 700 }}>{myEntry.partySize}名</span>
+              <div style={{ background: C.surf, border: `1px solid ${C.bdr}`, borderRadius: '16px', padding: '20px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <span style={{ color: C.muted, fontSize: '13px' }}>{t.nameLabel}</span>
+                  <span style={{ color: C.txt, fontSize: '13px', fontWeight: 700 }}>{myEntry.name} {t.nameSuffix}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <span style={{ color: C.muted, fontSize: '13px' }}>{t.partySizeLabel}</span>
+                  <span style={{ color: C.txt, fontSize: '13px', fontWeight: 700 }}>{myEntry.partySize}{t.partySizeSuffix}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: C.muted, fontSize: '13px' }}>{t.estimatedWait}</span>
+                  <span style={{ color: C.amber, fontSize: '13px', fontWeight: 700 }}>{t.approx}{estimatedWait}{t.minutes}</span>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: C.muted, fontSize: '13px' }}>待ち時間の目安</span>
-                <span style={{ color: C.amber, fontSize: '13px', fontWeight: 700 }}>約{estimatedWait}分</span>
+              <div style={{ background: C.surf, border: `1px solid ${C.bdr}`, borderRadius: '12px', padding: '14px', textAlign: 'center' }}>
+                <p style={{ color: C.muted, fontSize: '12px', margin: 0 }}>{t.waitNote.split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}</p>
               </div>
             </div>
-            <div style={{ background: C.surf, border: `1px solid ${C.bdr}`, borderRadius: '12px', padding: '14px', textAlign: 'center' }}>
-              <p style={{ color: C.muted, fontSize: '12px', margin: 0 }}>順番が来たらこの画面に通知が届きます。<br />近くでお待ちください。</p>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
 
   if (step === 'register') return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: "'Noto Sans JP', sans-serif" }}>
-      <div style={{ background: C.surf, borderBottom: `1px solid ${C.bdr}`, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <button onClick={() => setStep('status')} style={{ background: 'transparent', border: 'none', color: C.amber, fontSize: '14px', cursor: 'pointer', fontWeight: 700 }}>← 戻る</button>
-        <div style={{ fontSize: '17px', fontWeight: 800, color: C.txt }}>順番待ちに登録</div>
+      <div style={{ background: C.surf, borderBottom: `1px solid ${C.bdr}`, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button onClick={() => setStep('status')} style={{ background: 'transparent', border: 'none', color: C.amber, fontSize: '14px', cursor: 'pointer', fontWeight: 700 }}>{t.back}</button>
+          <div style={{ fontSize: '17px', fontWeight: 800, color: C.txt }}>{t.registerTitle}</div>
+        </div>
+        <LangButtons />
       </div>
       <div style={{ padding: '24px' }}>
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ color: C.muted, fontSize: '13px', display: 'block', marginBottom: '8px' }}>お名前</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="例：田中"
+          <label style={{ color: C.muted, fontSize: '13px', display: 'block', marginBottom: '8px' }}>{t.yourName}</label>
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t.namePlaceholder}
             style={{ width: '100%', background: C.surf, border: `1px solid ${C.bdr}`, borderRadius: '12px', padding: '12px 14px', color: C.txt, fontSize: '15px', outline: 'none', fontFamily: "'Noto Sans JP', sans-serif" }} />
         </div>
         <div style={{ marginBottom: '28px' }}>
-          <label style={{ color: C.muted, fontSize: '13px', display: 'block', marginBottom: '8px' }}>人数</label>
+          <label style={{ color: C.muted, fontSize: '13px', display: 'block', marginBottom: '8px' }}>{t.partySize}</label>
           <div style={{ display: 'flex', gap: '8px' }}>
             {[1, 2, 3, 4, 5, 6].map((n) => (
               <button key={n} onClick={() => setPartySize(n)}
@@ -144,7 +236,7 @@ function WaitingForm() {
         </div>
         <button onClick={handleRegister} disabled={!name.trim() || loading}
           style={{ width: '100%', background: name.trim() ? C.amber : C.faint, border: 'none', color: name.trim() ? C.bg : C.muted, fontSize: '15px', fontWeight: 800, padding: '14px', borderRadius: '12px', cursor: name.trim() ? 'pointer' : 'default', fontFamily: "'Noto Sans JP', sans-serif" }}>
-          {loading ? '登録中...' : '登録する'}
+          {loading ? t.registering : t.register}
         </button>
       </div>
     </div>
@@ -152,16 +244,19 @@ function WaitingForm() {
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: "'Noto Sans JP', sans-serif" }}>
-      <div style={{ background: C.surf, borderBottom: `1px solid ${C.bdr}`, padding: '14px 16px' }}>
-        <div style={{ fontSize: '18px', fontWeight: 800, color: C.txt }}>Irasse</div>
-        <div style={{ fontSize: '11px', color: C.muted }}>現在の混雑状況</div>
+      <div style={{ background: C.surf, borderBottom: `1px solid ${C.bdr}`, padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontSize: '18px', fontWeight: 800, color: C.txt }}>{t.title}</div>
+          <div style={{ fontSize: '11px', color: C.muted }}>{t.congestion}</div>
+        </div>
+        <LangButtons />
       </div>
       <div style={{ padding: '16px' }}>
         <div style={{ background: C.surf, border: `1px solid ${C.bdr}`, borderRadius: '16px', padding: '20px', marginBottom: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <span style={{ fontSize: '20px', fontWeight: 700, color: C.txt }}>{congestionLabel}</span>
             <span style={{ background: C.faint, border: `1px solid ${congestionColor}`, borderRadius: '20px', padding: '4px 12px', color: congestionColor, fontSize: '12px', fontWeight: 700 }}>
-              {storeStatus?.occupiedSeats ?? 0} / {storeStatus?.totalSeats ?? 0} 席
+              {storeStatus?.occupiedSeats ?? 0} / {storeStatus?.totalSeats ?? 0} {t.seats}
             </span>
           </div>
           <div style={{ background: C.faint, borderRadius: '8px', height: '8px', overflow: 'hidden' }}>
@@ -172,30 +267,30 @@ function WaitingForm() {
         {availableSeats > 0 ? (
           <button onClick={() => window.location.href = `/order?table=1`}
             style={{ width: '100%', background: C.amber, border: 'none', color: C.bg, fontSize: '15px', fontWeight: 800, padding: '14px', borderRadius: '12px', cursor: 'pointer', marginBottom: '12px', fontFamily: "'Noto Sans JP', sans-serif" }}>
-            このまま入店して注文する →
+            {t.enterNow}
           </button>
         ) : (
           <div style={{ background: '#1a0000', border: '1px solid #ef4444', borderRadius: '12px', padding: '14px', textAlign: 'center', marginBottom: '12px' }}>
-            <p style={{ color: '#ef4444', fontSize: '14px', fontWeight: 700, margin: 0 }}>❌ 現在満席です</p>
+            <p style={{ color: '#ef4444', fontSize: '14px', fontWeight: 700, margin: 0 }}>{t.full}</p>
           </div>
         )}
 
         {waitingList.length > 0 && (
           <div style={{ background: C.surf, border: `1px solid ${C.bdr}`, borderRadius: '14px', padding: '16px', marginBottom: '12px' }}>
-            <div style={{ fontSize: '13px', fontWeight: 700, color: C.txt, marginBottom: '10px' }}>ウェイティングリスト</div>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: C.txt, marginBottom: '10px' }}>{t.waitingList}</div>
             {waitingList.slice(0, 3).map((entry, i) => (
               <div key={entry.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: i < 2 ? `1px solid ${C.bdr}` : 'none' }}>
-                <span style={{ color: C.txt, fontSize: '13px' }}>{entry.name} 様（{entry.partySize}名）</span>
-                <span style={{ color: i === 0 ? C.amber : C.muted, fontSize: '12px', fontWeight: 700 }}>{i + 1}番目</span>
+                <span style={{ color: C.txt, fontSize: '13px' }}>{entry.name} {lang === 'ja' ? '様' : lang === 'ko' ? '님' : ''}（{entry.partySize}{lang === 'ja' ? '名' : lang === 'ko' ? '명' : lang === 'zh' ? '位' : ''}）</span>
+                <span style={{ color: i === 0 ? C.amber : C.muted, fontSize: '12px', fontWeight: 700 }}>{i + 1}{t.positionSuffix}</span>
               </div>
             ))}
-            {waitingList.length > 3 && <p style={{ color: C.muted, fontSize: '12px', margin: '8px 0 0', textAlign: 'center' }}>他 {waitingList.length - 3}組 待ち</p>}
+            {waitingList.length > 3 && <p style={{ color: C.muted, fontSize: '12px', margin: '8px 0 0', textAlign: 'center' }}>+{waitingList.length - 3} {t.othersWaiting}</p>}
           </div>
         )}
 
         <button onClick={() => setStep('register')}
           style={{ width: '100%', background: C.faint, border: `1px solid ${C.bdr}`, color: C.txt, fontSize: '14px', fontWeight: 700, padding: '14px', borderRadius: '12px', cursor: 'pointer', fontFamily: "'Noto Sans JP', sans-serif" }}>
-          📋 ウェイティングリストに追加する
+          {t.joinWaitlist}
         </button>
       </div>
     </div>
