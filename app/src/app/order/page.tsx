@@ -20,19 +20,23 @@ const TR = {
     receipt: 'お会計', orderContents: 'ご注文内容',
     noOrder: 'まだ注文がありません', payMethod: 'お支払い方法',
     card: '💳 カード', cash: '💴 現金', payBtn: '💳 この内容でお支払い',
+    payWaitCash: 'スタッフが参ります',
+    payWaitCashSub: 'そのままお座りのままお待ちください。\nスタッフがお伺いします。',
+    payWaitCard: 'キャッシャーまでお越しください',
+    payWaitCardSub: 'レジにてお支払いをお願いします。\nご来店ありがとうございました。',
     payDone: 'お支払い完了', payDoneSub: 'またのご来店をお待ちしております',
     total: '合計', confirm2: '確認する',
     categories: {
-        'フード': 'フード', '一品料理': '一品料理', 'おつまみ': 'おつまみ', '前菜': '前菜',
-        'ご飯・麺': 'ご飯・麺', 'ラーメン': 'ラーメン', '丼物': '丼物', 'パスタ': 'パスタ',
-        '肉料理': '肉料理', '魚料理': '魚料理', '野菜料理': '野菜料理',
-        'ドリンク': 'ドリンク', 'アルコール': 'アルコール', 'ノンアルコール': 'ノンアルコール',
-        'ビール': 'ビール', 'ワイン': 'ワイン', 'カクテル': 'カクテル', 'サワー': 'サワー',
-        'ソフトドリンク': 'ソフトドリンク', 'お茶': 'お茶', 'コーヒー': 'コーヒー',
-        'デザート': 'デザート', 'スイーツ': 'スイーツ',
-        'セット': 'セット', 'コース': 'コース',
-        '本日のおすすめ': '本日のおすすめ', '季節限定': '季節限定',
-      },
+      'フード': 'フード', '一品料理': '一品料理', 'おつまみ': 'おつまみ', '前菜': '前菜',
+      'ご飯・麺': 'ご飯・麺', 'ラーメン': 'ラーメン', '丼物': '丼物', 'パスタ': 'パスタ',
+      '肉料理': '肉料理', '魚料理': '魚料理', '野菜料理': '野菜料理',
+      'ドリンク': 'ドリンク', 'アルコール': 'アルコール', 'ノンアルコール': 'ノンアルコール',
+      'ビール': 'ビール', 'ワイン': 'ワイン', 'カクテル': 'カクテル', 'サワー': 'サワー',
+      'ソフトドリンク': 'ソフトドリンク', 'お茶': 'お茶', 'コーヒー': 'コーヒー',
+      'デザート': 'デザート', 'スイーツ': 'スイーツ',
+      'セット': 'セット', 'コース': 'コース',
+      '本日のおすすめ': '本日のおすすめ', '季節限定': '季節限定',
+    },
   },
   en: {
     title: 'Menu', table: 'Table',
@@ -48,19 +52,23 @@ const TR = {
     receipt: 'Bill', orderContents: 'Order Summary',
     noOrder: 'No orders yet', payMethod: 'Payment Method',
     card: '💳 Card', cash: '💴 Cash', payBtn: '💳 Pay Now',
+    payWaitCash: 'Staff is on the way',
+    payWaitCashSub: 'Please remain seated.\nA staff member will come to you.',
+    payWaitCard: 'Please proceed to the cashier',
+    payWaitCardSub: 'Please pay at the register.\nThank you for visiting!',
     payDone: 'Payment Complete', payDoneSub: 'Thank you! See you again 🍜',
     total: 'Total', confirm2: 'Confirm',
     categories: {
-        'フード': 'Food', '一品料理': 'Dishes', 'おつまみ': 'Snacks', '前菜': 'Starters',
-        'ご飯・麺': 'Rice & Noodles', 'ラーメン': 'Ramen', '丼物': 'Rice Bowls', 'パスタ': 'Pasta',
-        '肉料理': 'Meat', '魚料理': 'Fish', '野菜料理': 'Vegetables',
-        'ドリンク': 'Drinks', 'アルコール': 'Alcohol', 'ノンアルコール': 'Non-Alcohol',
-        'ビール': 'Beer', 'ワイン': 'Wine', 'カクテル': 'Cocktails', 'サワー': 'Sours',
-        'ソフトドリンク': 'Soft Drinks', 'お茶': 'Tea', 'コーヒー': 'Coffee',
-        'デザート': 'Desserts', 'スイーツ': 'Sweets',
-        'セット': 'Sets', 'コース': 'Course',
-        '本日のおすすめ': "Today's Special", '季節限定': 'Seasonal',
-      },
+      'フード': 'Food', '一品料理': 'Dishes', 'おつまみ': 'Snacks', '前菜': 'Starters',
+      'ご飯・麺': 'Rice & Noodles', 'ラーメン': 'Ramen', '丼物': 'Rice Bowls', 'パスタ': 'Pasta',
+      '肉料理': 'Meat', '魚料理': 'Fish', '野菜料理': 'Vegetables',
+      'ドリンク': 'Drinks', 'アルコール': 'Alcohol', 'ノンアルコール': 'Non-Alcohol',
+      'ビール': 'Beer', 'ワイン': 'Wine', 'カクテル': 'Cocktails', 'サワー': 'Sours',
+      'ソフトドリンク': 'Soft Drinks', 'お茶': 'Tea', 'コーヒー': 'Coffee',
+      'デザート': 'Desserts', 'スイーツ': 'Sweets',
+      'セット': 'Sets', 'コース': 'Course',
+      '本日のおすすめ': "Today's Special", '季節限定': 'Seasonal',
+    },
   },
   ko: {
     title: '메뉴', table: '테이블',
@@ -71,24 +79,28 @@ const TR = {
     callTitle: '직원 호출', callSub: '용건을 선택하고 버튼을 눌러주세요',
     callMemo: '메모 (선택사항)', callBtn: '🔔 직원 호출',
     callSent: '직원에게 알렸습니다', callSentSub: '곧 찾아뵙겠습니다',
-    callWater: '💧 물 주세요', callOrder: '📋 주문 변경', 
+    callWater: '💧 물 주세요', callOrder: '📋 주문 변경',
     callClean: '🧹 테이블 닦아주세요', callOther: '🔔 기타',
     receipt: '계산', orderContents: '주문 내역',
     noOrder: '아직 주문이 없습니다', payMethod: '결제 방법',
     card: '💳 카드', cash: '💴 현금', payBtn: '💳 결제하기',
+    payWaitCash: '직원이 곧 갑니다',
+    payWaitCashSub: '자리에 앉아서 기다려 주세요.\n직원이 찾아뵙겠습니다.',
+    payWaitCard: '계산대로 오세요',
+    payWaitCardSub: '계산대에서 결제해 주세요.\n감사합니다!',
     payDone: '결제 완료', payDoneSub: '또 방문해 주세요 🍜',
     total: '합계', confirm2: '확인',
     categories: {
-        'フード': '푸드', '一品料理': '일품요리', 'おつまみ': '안주', '前菜': '전채',
-        'ご飯・麺': '밥·면', 'ラーメン': '라멘', '丼物': '덮밥', 'パスタ': '파스타',
-        '肉料理': '육류', '魚料理': '생선요리', '野菜料理': '채소요리',
-        'ドリンク': '음료', 'アルコール': '주류', 'ノンアルコール': '논알코올',
-        'ビール': '맥주', 'ワイン': '와인', 'カクテル': '칵테일', 'サワー': '사워',
-        'ソフトドリンク': '소프트드링크', 'お茶': '차', 'コーヒー': '커피',
-        'デザート': '디저트', 'スイーツ': '스위츠',
-        'セット': '세트', 'コース': '코스',
-        '本日のおすすめ': '오늘의 추천', '季節限定': '시즌 한정',
-      },
+      'フード': '푸드', '一品料理': '일품요리', 'おつまみ': '안주', '前菜': '전채',
+      'ご飯・麺': '밥·면', 'ラーメン': '라멘', '丼物': '덮밥', 'パスタ': '파스타',
+      '肉料理': '육류', '魚料理': '생선요리', '野菜料理': '채소요리',
+      'ドリンク': '음료', 'アルコール': '주류', 'ノンアルコール': '논알코올',
+      'ビール': '맥주', 'ワイン': '와인', 'カクテル': '칵테일', 'サワー': '사워',
+      'ソフトドリンク': '소프트드링크', 'お茶': '차', 'コーヒー': '커피',
+      'デザート': '디저트', 'スイーツ': '스위츠',
+      'セット': '세트', 'コース': '코스',
+      '本日のおすすめ': '오늘의 추천', '季節限定': '시즌 한정',
+    },
   },
   zh: {
     title: '菜单', table: '桌号',
@@ -104,19 +116,23 @@ const TR = {
     receipt: '账单', orderContents: '订单内容',
     noOrder: '暂无订单', payMethod: '支付方式',
     card: '💳 刷卡', cash: '💴 现金', payBtn: '💳 立即支付',
+    payWaitCash: '服务员马上来',
+    payWaitCashSub: '请在座位上等候。\n服务员将前来为您结账。',
+    payWaitCard: '请前往收银台',
+    payWaitCardSub: '请在收银台付款。\n感谢您的光临！',
     payDone: '支付完成', payDoneSub: '欢迎再次光临 🍜',
     total: '合计', confirm2: '确认',
     categories: {
-        'フード': '美食', '一品料理': '单品料理', 'おつまみ': '小食', '前菜': '前菜',
-        'ご飯・麺': '饭·面', 'ラーメン': '拉面', '丼物': '盖饭', 'パスタ': '意面',
-        '肉料理': '肉类', '魚料理': '鱼类', '野菜料理': '蔬菜',
-        'ドリンク': '饮品', 'アルコール': '酒精饮料', 'ノンアルコール': '无酒精',
-        'ビール': '啤酒', 'ワイン': '红酒', 'カクテル': '鸡尾酒', 'サワー': '酸酒',
-        'ソフトドリンク': '软饮料', 'お茶': '茶', 'コーヒー': '咖啡',
-        'デザート': '甜点', 'スイーツ': '甜品',
-        'セット': '套餐', 'コース': '套餐课程',
-        '本日のおすすめ': '今日推荐', '季節限定': '季节限定',
-      },
+      'フード': '美食', '一品料理': '单品料理', 'おつまみ': '小食', '前菜': '前菜',
+      'ご飯・麺': '饭·面', 'ラーメン': '拉面', '丼物': '盖饭', 'パスタ': '意面',
+      '肉料理': '肉类', '魚料理': '鱼类', '野菜料理': '蔬菜',
+      'ドリンク': '饮品', 'アルコール': '酒精饮料', 'ノンアルコール': '无酒精',
+      'ビール': '啤酒', 'ワイン': '红酒', 'カクテル': '鸡尾酒', 'サワー': '酸酒',
+      'ソフトドリンク': '软饮料', 'お茶': '茶', 'コーヒー': '咖啡',
+      'デザート': '甜点', 'スイーツ': '甜品',
+      'セット': '套餐', 'コース': '套餐课程',
+      '本日のおすすめ': '今日推荐', '季節限定': '季节限定',
+    },
   },
 };
 
@@ -183,11 +199,9 @@ function OrderForm() {
       const sessionId = tableDoc?.data()?.currentSessionId || null;
 
       await addDoc(collection(db, 'orders'), {
-        tableNumber,
-        sessionId,
+        tableNumber, sessionId,
         items: cartItems.map((c) => `${c.name} x${c.qty}`),
-        status: 'pending',
-        createdAt: serverTimestamp(),
+        status: 'pending', createdAt: serverTimestamp(),
       });
 
       if (sessionId) {
@@ -281,7 +295,7 @@ function OrderForm() {
         <button style={TAB_STYLE(activeTab === 'receipt')} onClick={() => setActiveTab('receipt')}>{t.receipt}</button>
       </div>
 
-      {/* ── 注文タブ ── */}
+      {/* 注文タブ */}
       {activeTab === 'order' && (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           {orderStep === 'done' ? (
@@ -338,7 +352,7 @@ function OrderForm() {
                     background: 'transparent', border: 'none',
                     borderBottom: activeCategory === cat ? `2px solid ${C.amber}` : '2px solid transparent',
                     cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: "'Noto Sans JP', sans-serif",
-                }}>{(t.categories as Record<string, string>)[cat] || cat}</button>
+                  }}>{(t.categories as Record<string, string>)[cat] || cat}</button>
                 ))}
               </div>
               <div style={{ flex: 1, overflowY: 'auto', padding: '12px', paddingBottom: '80px' }}>
@@ -369,7 +383,7 @@ function OrderForm() {
         </div>
       )}
 
-      {/* ── スタッフ呼び出しタブ ── */}
+      {/* スタッフ呼び出しタブ */}
       {activeTab === 'call' && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
           <p style={{ color: C.muted, fontSize: '13px', marginBottom: '14px' }}>{t.callSub}</p>
@@ -395,14 +409,32 @@ function OrderForm() {
         </div>
       )}
 
-      {/* ── お会計タブ ── */}
+      {/* お会計タブ */}
       {activeTab === 'receipt' && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
           {payDone ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-              <div style={{ fontSize: '56px', marginBottom: '16px' }}>🙏</div>
-              <div style={{ fontSize: '22px', fontWeight: 800, color: C.txt, marginBottom: '8px' }}>{t.payDone}</div>
-              <div style={{ fontSize: '13px', color: C.muted }}>{t.payDoneSub}</div>
+            <div style={{ textAlign: 'center', padding: '50px 20px' }}>
+              <div style={{ fontSize: '56px', marginBottom: '16px' }}>
+                {payMethod === 'cash' ? '⏳' : '🏧'}
+              </div>
+              <div style={{ fontSize: '20px', fontWeight: 800, color: C.txt, marginBottom: '12px' }}>
+                {payMethod === 'cash' ? t.payWaitCash : t.payWaitCard}
+              </div>
+              <div style={{ fontSize: '13px', color: C.muted, lineHeight: 1.8, marginBottom: '24px', whiteSpace: 'pre-line' }}>
+                {payMethod === 'cash' ? t.payWaitCashSub : t.payWaitCardSub}
+              </div>
+              <div style={{ background: C.surf, border: `1px solid ${C.bdr}`, borderRadius: '14px', padding: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: C.muted, fontSize: '13px' }}>{t.total}</span>
+                  <span style={{ color: C.amber, fontSize: '22px', fontWeight: 800 }}>¥{orderedTotal.toLocaleString()}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                  <span style={{ color: C.muted, fontSize: '13px' }}>{t.payMethod}</span>
+                  <span style={{ color: C.txt, fontSize: '13px', fontWeight: 700 }}>
+                    {payMethod === 'cash' ? t.cash : t.card}
+                  </span>
+                </div>
+              </div>
             </div>
           ) : (
             <>

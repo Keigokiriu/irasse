@@ -43,6 +43,7 @@ export default function DashboardPage() {
     { label: 'スタッフ呼び出し', desc: '呼び出し通知をリアルタイム確認', emoji: '🔔', path: '/calls', accent: false },
     { label: 'お会計管理', desc: 'お会計リクエストを確認', emoji: '💳', path: '/payments', accent: false },
     { label: '待ち行列管理', desc: '混雑状況・ウェイティング管理', emoji: '📋', path: '/waitlist', accent: false },
+    { label: '店舗設定', desc: '支払い・待ち行列・席数などを設定', emoji: '⚙️', path: '/settings', accent: false },
   ];
 
   return (
