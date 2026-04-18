@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, onSnapshot, doc, updateDoc, setDoc, deleteDoc, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, setDoc, deleteDoc, addDoc, serverTimestamp, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
@@ -9,12 +9,20 @@ type TableType = 'table' | 'counter' | 'room';
 type TableStatus = 'empty' | 'occupied' | 'billing' | 'paid';
 
 type Table = {
-  id: string;
-  number: number;
-  type: TableType;
-  seats: number;
-  status: TableStatus;
-  currentSessionId?: string;
+    id: string;
+    number: number;
+    type: TableType;
+    seats: number;
+    status: TableStatus;
+    currentSessionId?: string;
+    exitPrediction?: { minutes: number; reason: string };
+    exitPredictionUpdatedAt?: any;
+  };
+
+type Prediction = {
+  minutes: number;
+  reason: string;
+  loading?: boolean;
 };
 
 const STATUS_LABEL: Record<TableStatus, string> = {
@@ -63,6 +71,8 @@ export default function TablesPage() {
   const [newType, setNewType] = useState<TableType>('table');
   const [newSeats, setNewSeats] = useState(2);
   const [filterStatus, setFilterStatus] = useState<TableStatus | 'all'>('all');
+  const [predictions, setPredictions] = useState<Record<string, Prediction>>({});
+  const [storeStatus, setStoreStatus] = useState<{ totalSeats: number; occupiedSeats: number }>({ totalSeats: 20, occupiedSeats: 0 });
   const router = useRouter();
 
   useEffect(() => {
@@ -76,6 +86,60 @@ export default function TablesPage() {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'store_status', 'main'), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        setStoreStatus({
+          totalSeats: data.totalSeats || 20,
+          occupiedSeats: data.occupiedSeats || 0,
+        });
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const fetchPrediction = async (table: Table) => {
+    if (table.status !== 'occupied' || !table.currentSessionId) return;
+
+    setPredictions((prev) => ({ ...prev, [table.id]: { minutes: 0, reason: '', loading: true } }));
+
+    try {
+      // セッションの注文を取得
+      const ordersSnapshot = await getDocs(
+        query(collection(db, 'orders'), where('sessionId', '==', table.currentSessionId))
+      );
+      const items: string[] = [];
+      ordersSnapshot.docs.forEach((d) => {
+        const data = d.data();
+        if (data.items) items.push(...data.items);
+      });
+
+      if (items.length === 0) {
+        setPredictions((prev) => ({ ...prev, [table.id]: { minutes: 0, reason: '注文待ち', loading: false } }));
+        return;
+      }
+
+      const response = await fetch('/api/predict-exit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items,
+          partySize: table.seats || 2,
+          occupiedSeats: storeStatus.occupiedSeats,
+          totalSeats: storeStatus.totalSeats,
+          pastAvgMinutes: null,
+        }),
+      });
+
+      const result = await response.json();
+      setPredictions((prev) => ({ ...prev, [table.id]: { ...result, loading: false } }));
+    } catch (e) {
+      console.error(e);
+      setPredictions((prev) => ({ ...prev, [table.id]: { minutes: 60, reason: '予測エラー', loading: false } }));
+    }
+  };
 
   const updateStatus = async (id: string, currentStatus: TableStatus) => {
     const nextStatus = NEXT_STATUS[currentStatus];
@@ -105,6 +169,11 @@ export default function TablesPage() {
       await updateDoc(doc(db, 'tables', id), {
         status: nextStatus,
         currentSessionId: null,
+      });
+      setPredictions((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
       });
     } else {
       await updateDoc(doc(db, 'tables', id), { status: nextStatus });
@@ -187,29 +256,49 @@ export default function TablesPage() {
             <p style={{ color: '#64748b', margin: 0 }}>テーブルがまだありません。「＋ 追加」から追加してください。</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-            {filteredTables.map((table) => (
-              <div key={table.id}
-                style={{ background: STATUS_BG[table.status], border: `1px solid ${STATUS_COLOR[table.status]}`, borderRadius: '14px', padding: '16px', textAlign: 'center', position: 'relative' }}>
-                <button onClick={() => deleteTable(table.id)}
-                  style={{ position: 'absolute', top: '6px', right: '6px', background: 'transparent', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer', padding: '2px' }}>
-                  ✕
-                </button>
-                <div style={{ fontSize: '20px', marginBottom: '4px' }}>{TYPE_EMOJI[table.type || 'table']}</div>
-                <div style={{ color: '#94a3b8', fontSize: '10px', marginBottom: '2px' }}>{TYPE_LABEL[table.type || 'table']}</div>
-                <div style={{ color: '#f1f5f9', fontSize: '28px', fontWeight: 800, lineHeight: 1, marginBottom: '4px' }}>{table.number}</div>
-                <div style={{ color: '#94a3b8', fontSize: '10px', marginBottom: '8px' }}>👤 {table.seats || 2}席</div>
-                <div style={{ background: STATUS_COLOR[table.status] + '22', borderRadius: '8px', padding: '4px 6px', marginBottom: '10px' }}>
-                  <span style={{ color: STATUS_COLOR[table.status], fontSize: '10px', fontWeight: 700 }}>{STATUS_LABEL[table.status]}</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px' }}>
+            {filteredTables.map((table) => {
+              const pred = predictions[table.id];
+              return (
+                <div key={table.id}
+                  style={{ background: STATUS_BG[table.status], border: `1px solid ${STATUS_COLOR[table.status]}`, borderRadius: '14px', padding: '16px', textAlign: 'center', position: 'relative' }}>
+                  <button onClick={() => deleteTable(table.id)}
+                    style={{ position: 'absolute', top: '6px', right: '6px', background: 'transparent', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer', padding: '2px' }}>
+                    ✕
+                  </button>
+                  <div style={{ fontSize: '20px', marginBottom: '4px' }}>{TYPE_EMOJI[table.type || 'table']}</div>
+                  <div style={{ color: '#94a3b8', fontSize: '10px', marginBottom: '2px' }}>{TYPE_LABEL[table.type || 'table']}</div>
+                  <div style={{ color: '#f1f5f9', fontSize: '28px', fontWeight: 800, lineHeight: 1, marginBottom: '4px' }}>{table.number}</div>
+                  <div style={{ color: '#94a3b8', fontSize: '10px', marginBottom: '8px' }}>👤 {table.seats || 2}席</div>
+                  <div style={{ background: STATUS_COLOR[table.status] + '22', borderRadius: '8px', padding: '4px 6px', marginBottom: '8px' }}>
+                    <span style={{ color: STATUS_COLOR[table.status], fontSize: '10px', fontWeight: 700 }}>{STATUS_LABEL[table.status]}</span>
+                  </div>
+
+                  {/* AI退席予測 */}
+{table.status === 'occupied' && (
+  <div style={{ marginBottom: '8px' }}>
+    {table.exitPrediction ? (
+      <div style={{ background: '#0f172a', border: '1px solid #3b82f6', borderRadius: '8px', padding: '6px' }}>
+        <div style={{ color: '#60a5fa', fontSize: '11px', fontWeight: 700 }}>🤖 退席予測：約{table.exitPrediction.minutes}分</div>
+        <div style={{ color: '#64748b', fontSize: '9px', marginTop: '2px' }}>{table.exitPrediction.reason}</div>
+      </div>
+    ) : (
+      <div style={{ background: '#0f172a', borderRadius: '8px', padding: '6px', fontSize: '10px', color: '#64748b', textAlign: 'center' }}>
+        🤖 注文後に予測が表示されます
+      </div>
+    )}
+  </div>
+)}
+
+                  <button onClick={() => updateStatus(table.id, table.status)}
+                    style={{ width: '100%', background: STATUS_COLOR[table.status], border: 'none', color: '#fff', fontSize: '11px', fontWeight: 700, padding: '7px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    {NEXT_STATUS[table.status] === 'empty' ? '退店済み・案内OK →' :
+                     NEXT_STATUS[table.status] === 'occupied' ? '着席 →' :
+                     NEXT_STATUS[table.status] === 'billing' ? '会計待ち →' : '会計済み →'}
+                  </button>
                 </div>
-                <button onClick={() => updateStatus(table.id, table.status)}
-                  style={{ width: '100%', background: STATUS_COLOR[table.status], border: 'none', color: '#fff', fontSize: '11px', fontWeight: 700, padding: '7px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                  {NEXT_STATUS[table.status] === 'empty' ? '退店済み・案内OK →' :
-                   NEXT_STATUS[table.status] === 'occupied' ? '着席 →' :
-                   NEXT_STATUS[table.status] === 'billing' ? '会計待ち →' : '会計済み →'}
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

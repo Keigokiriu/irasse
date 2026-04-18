@@ -209,6 +209,7 @@ useEffect(() => {
       );
       const tableDoc = tablesSnapshot.docs[0];
       const sessionId = tableDoc?.data()?.currentSessionId || null;
+      const tableId = tableDoc?.id || null;
 
       await addDoc(collection(db, 'orders'), {
         tableNumber, sessionId,
@@ -223,6 +224,45 @@ useEffect(() => {
           await updateDoc(doc(db, 'sessions', sessionId), {
             totalAmount: currentTotal + total,
           });
+        }
+      }
+
+      // AI退席予測を自動実行
+      if (tableId && sessionId) {
+        try {
+          const allOrdersSnapshot = await getDocs(
+            query(collection(db, 'orders'), where('sessionId', '==', sessionId))
+          );
+          const allItems: string[] = [];
+          allOrdersSnapshot.docs.forEach((d) => {
+            const data = d.data();
+            if (data.items) allItems.push(...data.items);
+          });
+          cartItems.forEach((c) => allItems.push(`${c.name} x${c.qty}`));
+
+          const storeSnap = await getDoc(doc(db, 'store_status', 'main'));
+          const totalSeats = storeSnap.exists() ? (storeSnap.data().totalSeats || 20) : 20;
+          const occupiedSeats = storeSnap.exists() ? (storeSnap.data().occupiedSeats || 0) : 0;
+
+          const predResponse = await fetch('/api/predict-exit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              items: allItems,
+              partySize: tableDoc?.data()?.seats || 2,
+              occupiedSeats,
+              totalSeats,
+              pastAvgMinutes: null,
+            }),
+          });
+          const prediction = await predResponse.json();
+
+          await updateDoc(doc(db, 'tables', tableId), {
+            exitPrediction: prediction,
+            exitPredictionUpdatedAt: serverTimestamp(),
+          });
+        } catch (predError) {
+          console.error('Prediction error:', predError);
         }
       }
 
