@@ -388,11 +388,25 @@ function CustomerView({ shared }: { shared: SharedState }) {
       {activeTab === 'receipt' && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
           {payDone ? (
-            <div style={{ textAlign: 'center', padding: '30px 12px' }}>
-              <div style={{ fontSize: '40px', marginBottom: '10px' }}>🙏</div>
-              <div style={{ fontSize: '15px', fontWeight: 800, color: C.txt, marginBottom: '4px' }}>{t.payDone}</div>
-              <div style={{ fontSize: '11px', color: C.muted }}>{t.payDoneSub}</div>
-            </div>
+  <div style={{ textAlign: 'center', padding: '30px 12px' }}>
+    <div style={{ fontSize: '40px', marginBottom: '10px' }}>
+      {payMethod === 'cash' ? '⏳' : '🏧'}
+    </div>
+    <div style={{ fontSize: '15px', fontWeight: 800, color: C.txt, marginBottom: '6px' }}>
+      {payMethod === 'cash' ? 'スタッフが参ります' : 'キャッシャーまでお越しください'}
+    </div>
+    <div style={{ fontSize: '11px', color: C.muted, lineHeight: 1.7, marginBottom: '14px', whiteSpace: 'pre-line' }}>
+      {payMethod === 'cash'
+        ? 'そのままお座りのままお待ちください。\nスタッフがお伺いします。'
+        : 'レジにてお支払いをお願いします。\nご来店ありがとうございました。'}
+    </div>
+    <div style={{ background: C.surf, border: `1px solid ${C.bdr}`, borderRadius: '10px', padding: '12px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span style={{ color: C.muted, fontSize: '11px' }}>合計</span>
+        <span style={{ color: C.amber, fontSize: '16px', fontWeight: 800 }}>¥{orderedTotal.toLocaleString()}</span>
+      </div>
+    </div>
+  </div>
           ) : (
             <>
               {orderedItems.length > 0 ? (
