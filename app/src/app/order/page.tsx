@@ -177,6 +177,18 @@ function OrderForm() {
     return () => unsubscribe();
   }, []);
 
+  const [paymentStyle, setPaymentStyle] = useState<'staff' | 'cashier'>('staff');
+
+useEffect(() => {
+  const unsubscribe = onSnapshot(doc(db, 'store_status', 'main'), (snap) => {
+    if (snap.exists()) {
+      const data = snap.data();
+      if (data.paymentStyle) setPaymentStyle(data.paymentStyle);
+    }
+  });
+  return () => unsubscribe();
+}, []);
+
   const categories = [...new Set(menuItems.map((m) => m.category))];
   const cartItems: CartItem[] = Object.entries(cart).filter(([, q]) => q > 0).map(([id, qty]) => {
     const item = menuItems.find((m) => m.id === id);
@@ -413,29 +425,29 @@ function OrderForm() {
       {activeTab === 'receipt' && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
           {payDone ? (
-            <div style={{ textAlign: 'center', padding: '50px 20px' }}>
-              <div style={{ fontSize: '56px', marginBottom: '16px' }}>
-                {payMethod === 'cash' ? '⏳' : '🏧'}
-              </div>
-              <div style={{ fontSize: '20px', fontWeight: 800, color: C.txt, marginBottom: '12px' }}>
-                {payMethod === 'cash' ? t.payWaitCash : t.payWaitCard}
-              </div>
-              <div style={{ fontSize: '13px', color: C.muted, lineHeight: 1.8, marginBottom: '24px', whiteSpace: 'pre-line' }}>
-                {payMethod === 'cash' ? t.payWaitCashSub : t.payWaitCardSub}
-              </div>
-              <div style={{ background: C.surf, border: `1px solid ${C.bdr}`, borderRadius: '14px', padding: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: C.muted, fontSize: '13px' }}>{t.total}</span>
-                  <span style={{ color: C.amber, fontSize: '22px', fontWeight: 800 }}>¥{orderedTotal.toLocaleString()}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-                  <span style={{ color: C.muted, fontSize: '13px' }}>{t.payMethod}</span>
-                  <span style={{ color: C.txt, fontSize: '13px', fontWeight: 700 }}>
-                    {payMethod === 'cash' ? t.cash : t.card}
-                  </span>
-                </div>
-              </div>
-            </div>
+  <div style={{ textAlign: 'center', padding: '50px 20px' }}>
+    <div style={{ fontSize: '56px', marginBottom: '16px' }}>
+      {paymentStyle === 'staff' ? '⏳' : '🏧'}
+    </div>
+    <div style={{ fontSize: '20px', fontWeight: 800, color: C.txt, marginBottom: '12px' }}>
+      {paymentStyle === 'staff' ? t.payWaitCash : t.payWaitCard}
+    </div>
+    <div style={{ fontSize: '13px', color: C.muted, lineHeight: 1.8, marginBottom: '24px', whiteSpace: 'pre-line' }}>
+      {paymentStyle === 'staff' ? t.payWaitCashSub : t.payWaitCardSub}
+    </div>
+    <div style={{ background: C.surf, border: `1px solid ${C.bdr}`, borderRadius: '14px', padding: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ color: C.muted, fontSize: '13px' }}>{t.total}</span>
+        <span style={{ color: C.amber, fontSize: '22px', fontWeight: 800 }}>¥{orderedTotal.toLocaleString()}</span>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+        <span style={{ color: C.muted, fontSize: '13px' }}>{t.payMethod}</span>
+        <span style={{ color: C.txt, fontSize: '13px', fontWeight: 700 }}>
+          {payMethod === 'cash' ? t.cash : t.card}
+        </span>
+      </div>
+    </div>
+  </div>
           ) : (
             <>
               <div style={{ fontSize: '15px', fontWeight: 700, color: C.txt, marginBottom: '14px' }}>{t.orderContents}</div>
