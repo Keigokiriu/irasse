@@ -374,15 +374,21 @@ useEffect(() => {
               </div>
               <div style={{ padding: '16px' }}>
                 <div style={{ background: C.surf, border: `1px solid ${C.bdr}`, borderRadius: '14px', overflow: 'hidden', marginBottom: '12px' }}>
-                  {cartItems.map((item) => (
-                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: `1px solid ${C.bdr}` }}>
-                      <div>
-                        <p style={{ color: C.txt, fontWeight: 700, fontSize: '14px', margin: '0 0 2px' }}>{item.name}</p>
-                        <p style={{ color: C.muted, fontSize: '12px', margin: 0 }}>×{item.qty}</p>
-                      </div>
-                      <p style={{ color: C.amber, fontWeight: 700, fontSize: '14px', margin: 0 }}>¥{(item.price * item.qty).toLocaleString()}</p>
-                    </div>
-                  ))}
+                {cartItems.map((item) => (
+  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: `1px solid ${C.bdr}` }}>
+    <div style={{ flex: 1 }}>
+      <p style={{ color: C.txt, fontWeight: 700, fontSize: '14px', margin: '0 0 6px' }}>{item.name}</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <button onClick={() => sub(item.id)}
+          style={{ width: '24px', height: '24px', borderRadius: '50%', background: C.faint, border: `1px solid ${C.bdr}`, color: C.txt, fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit' }}>−</button>
+        <span style={{ fontSize: '14px', fontWeight: 700, color: C.amber, minWidth: '16px', textAlign: 'center' }}>{item.qty}</span>
+        <button onClick={() => add(item.id)}
+          style={{ width: '24px', height: '24px', borderRadius: '50%', background: C.amber, border: 'none', color: C.bg, fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontFamily: 'inherit' }}>+</button>
+      </div>
+    </div>
+    <p style={{ color: C.amber, fontWeight: 700, fontSize: '14px', margin: 0 }}>¥{(item.price * item.qty).toLocaleString()}</p>
+  </div>
+))}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px' }}>
                     <p style={{ color: C.txt, fontWeight: 700, fontSize: '15px', margin: 0 }}>{t.total}</p>
                     <p style={{ color: C.amber, fontWeight: 700, fontSize: '22px', margin: 0 }}>¥{total.toLocaleString()}</p>
