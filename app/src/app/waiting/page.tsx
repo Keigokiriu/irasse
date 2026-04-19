@@ -111,11 +111,16 @@ function WaitingForm() {
   const [name, setName] = useState('');
   const [partySize, setPartySize] = useState(2);
   const [loading, setLoading] = useState(false);
+  const [storeName, setStoreName] = useState('');
 
   useEffect(() => {
     const unsubStatus = onSnapshot(doc(db, 'store_status', 'main'), (snap) => {
-      if (snap.exists()) setStoreStatus(snap.data() as StoreStatus);
-    });
+        if (snap.exists()) {
+          const data = snap.data();
+          setStoreStatus(data as StoreStatus);
+          if (data.storeName) setStoreName(data.storeName);
+        }
+      });
     const q = query(collection(db, 'waitlist'), orderBy('createdAt', 'asc'));
     const unsubWait = onSnapshot(q, (snap) => {
       const data = snap.docs.map((d, i) => ({ id: d.id, ...d.data(), position: i + 1 })) as WaitlistEntry[];
@@ -162,7 +167,7 @@ function WaitingForm() {
   if (step === 'waiting' && myEntry) return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: "'Noto Sans JP', sans-serif" }}>
       <div style={{ background: C.surf, borderBottom: `1px solid ${C.bdr}`, padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontSize: '18px', fontWeight: 800, color: C.txt }}>{t.title}</div>
+        <div style={{ fontSize: '18px', fontWeight: 800, color: C.txt }}>{storeName || t.title}</div>
         <LangButtons />
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 24px' }}>
@@ -246,7 +251,7 @@ function WaitingForm() {
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: "'Noto Sans JP', sans-serif" }}>
       <div style={{ background: C.surf, borderBottom: `1px solid ${C.bdr}`, padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div style={{ fontSize: '18px', fontWeight: 800, color: C.txt }}>{t.title}</div>
+          <div style={{ fontSize: '18px', fontWeight: 800, color: C.txt }}>{storeName || t.title}</div>
           <div style={{ fontSize: '11px', color: C.muted }}>{t.congestion}</div>
         </div>
         <LangButtons />
