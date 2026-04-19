@@ -179,15 +179,18 @@ function OrderForm() {
 
   const [paymentStyle, setPaymentStyle] = useState<'staff' | 'cashier'>('staff');
 
-useEffect(() => {
-  const unsubscribe = onSnapshot(doc(db, 'store_status', 'main'), (snap) => {
-    if (snap.exists()) {
-      const data = snap.data();
-      if (data.paymentStyle) setPaymentStyle(data.paymentStyle);
-    }
-  });
-  return () => unsubscribe();
-}, []);
+  const [storeName, setStoreName] = useState('');
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'store_status', 'main'), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.paymentStyle) setPaymentStyle(data.paymentStyle);
+        if (data.storeName) setStoreName(data.storeName);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const categories = [...new Set(menuItems.map((m) => m.category))];
   const cartItems: CartItem[] = Object.entries(cart).filter(([, q]) => q > 0).map(([id, qty]) => {
@@ -320,7 +323,7 @@ useEffect(() => {
       {/* ヘッダー */}
       <div style={{ background: C.surf, borderBottom: `1px solid ${C.bdr}`, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div>
-          <div style={{ fontSize: '18px', fontWeight: 800, color: C.txt }}>Irasse</div>
+        <div style={{ fontSize: '18px', fontWeight: 800, color: C.txt }}>{storeName || 'Irasse'}</div>
           <div style={{ fontSize: '11px', color: C.muted }}>{t.table} {tableNumber}</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
