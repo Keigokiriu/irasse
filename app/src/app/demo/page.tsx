@@ -431,7 +431,7 @@ function CustomerView({ shared }: { shared: SharedState }) {
 }
 function StoreView({ shared }: { shared: SharedState }) {
     const [activeTab, setActiveTab] = useState<'tables' | 'orders' | 'calls' | 'kitchen'>('tables');
-    const [manageTab, setManageTab] = useState<'sales' | 'menu' | 'settings'>('sales');
+    const [manageTab, setManageTab] = useState<'sales' | 'menu' | 'qr' | 'settings'>('sales');
     const [mode, setMode] = useState<'operation' | 'manage'>('operation');
   
     const TAB = (active: boolean) => ({ flex: 1, padding: '7px 4px', fontSize: '9px', fontWeight: 700 as const, color: active ? N.accent : N.muted, background: 'transparent', border: 'none', borderBottom: active ? `2px solid ${N.accent}` : '2px solid transparent', cursor: 'pointer', fontFamily: 'inherit' });
@@ -663,9 +663,10 @@ function StoreView({ shared }: { shared: SharedState }) {
         {mode === 'manage' && (
           <>
             <div style={{ background: N.surf, borderBottom: `1px solid ${N.bdr}`, display: 'flex', flexShrink: 0 }}>
-              <button style={TAB(manageTab === 'sales')} onClick={() => setManageTab('sales')}>売上</button>
-              <button style={TAB(manageTab === 'menu')} onClick={() => setManageTab('menu')}>メニュー</button>
-              <button style={TAB(manageTab === 'settings')} onClick={() => setManageTab('settings')}>設定</button>
+            <button style={TAB(manageTab === 'sales')} onClick={() => setManageTab('sales')}>売上</button>
+            <button style={TAB(manageTab === 'menu')} onClick={() => setManageTab('menu')}>メニュー</button>
+            <button style={TAB(manageTab === 'qr')} onClick={() => setManageTab('qr')}>QR</button>
+            <button style={TAB(manageTab === 'settings')} onClick={() => setManageTab('settings')}>設定</button>
             </div>
   
             {manageTab === 'sales' && (
@@ -725,6 +726,35 @@ function StoreView({ shared }: { shared: SharedState }) {
               </div>
             )}
   
+  {manageTab === 'qr' && (
+  <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
+    <p style={{ color: N.muted, fontSize: '10px', fontWeight: 700, margin: '0 0 8px' }}>QRコード一覧</p>
+    <p style={{ color: N.muted, fontSize: '10px', margin: '0 0 12px' }}>各テーブルのQRコードを印刷して席に置いてください</p>
+    {[
+      { num: 1, type: 'テーブル', emoji: '🪑' },
+      { num: 2, type: 'テーブル', emoji: '🪑' },
+      { num: 3, type: 'テーブル', emoji: '🪑' },
+      { num: 4, type: 'カウンター', emoji: '🍺' },
+    ].map((table) => (
+      <div key={table.num} style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '12px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ background: '#ffffff', padding: '6px', borderRadius: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '2px' }}>
+            {[1,1,1,1,1,1,0,0,0,1,1,0,1,0,1,1,0,0,0,1,1,1,1,1,1].map((v, i) => (
+              <div key={i} style={{ width: '6px', height: '6px', background: v ? '#000' : '#fff' }} />
+            ))}
+          </div>
+        </div>
+        <div>
+          <p style={{ color: N.txt, fontSize: '12px', fontWeight: 700, margin: '0 0 2px' }}>{table.emoji} {table.type} {table.num}番</p>
+          <p style={{ color: N.muted, fontSize: '10px', margin: 0 }}>irasse.vercel.app/order?table={table.num}</p>
+        </div>
+      </div>
+    ))}
+    <div style={{ background: '#1c0a00', border: '1px solid #f97316', borderRadius: '10px', padding: '10px', textAlign: 'center', marginTop: '8px' }}>
+      <p style={{ color: '#f97316', fontSize: '10px', fontWeight: 700, margin: 0 }}>🖨️ 実際のQRは管理画面 → QRコードから印刷できます</p>
+    </div>
+  </div>
+)}
             {manageTab === 'settings' && (
               <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
                 <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
