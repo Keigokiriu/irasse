@@ -144,7 +144,7 @@ const C = {
   amber: '#ff8c38', amberD: '#1c0a00', amberM: '#ff6b00', faint: '#18181b',
 };
 
-type MenuItem = { id: string; name: string; price: number; category: string; };
+type MenuItem = { id: string; name: string; price: number; category: string; imageUrl?: string; };
 type CartItem = { id: string; name: string; price: number; qty: number; };
 
 function OrderForm() {
@@ -416,10 +416,17 @@ useEffect(() => {
               <div style={{ flex: 1, overflowY: 'auto', padding: '12px', paddingBottom: '80px' }}>
                 {menuItems.filter((m) => m.category === activeCategory).map((item) => (
                   <div key={item.id} style={{ background: C.surf, border: `1px solid ${cart[item.id] > 0 ? C.amber : C.bdr}`, borderRadius: '12px', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ color: C.txt, fontWeight: 700, fontSize: '14px', margin: '0 0 2px' }}>{item.name}</p>
-                      <p style={{ color: C.amber, fontWeight: 700, fontSize: '13px', margin: 0 }}>¥{item.price.toLocaleString()}</p>
-                    </div>
+                  <div style={{ width: '52px', height: '52px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, background: C.faint, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <span style={{ fontSize: '24px' }}>🍽️</span>
+                    )}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ color: C.txt, fontWeight: 700, fontSize: '14px', margin: '0 0 2px' }}>{item.name}</p>
+                    <p style={{ color: C.amber, fontWeight: 700, fontSize: '13px', margin: 0 }}>¥{item.price.toLocaleString()}</p>
+                  </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <button onClick={() => sub(item.id)} style={{ width: '28px', height: '28px', borderRadius: '50%', background: C.faint, border: `1px solid ${C.bdr}`, color: C.txt, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
                       <span style={{ fontSize: '14px', fontWeight: 700, color: cart[item.id] > 0 ? C.amber : C.muted, minWidth: '16px', textAlign: 'center' }}>{cart[item.id] || 0}</span>

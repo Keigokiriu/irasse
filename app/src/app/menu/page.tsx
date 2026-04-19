@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, onSnapshot, addDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
@@ -10,6 +10,7 @@ type MenuItem = {
   name: string;
   price: number;
   category: string;
+  imageUrl?: string;
 };
 
 export default function MenuPage() {
@@ -17,7 +18,10 @@ export default function MenuPage() {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('フード');
+  const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editImageUrl, setEditImageUrl] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -35,9 +39,15 @@ export default function MenuPage() {
     if (!name || !price) return;
     setLoading(true);
     try {
-      await addDoc(collection(db, 'menu'), { name, price: Number(price), category });
+      await addDoc(collection(db, 'menu'), {
+        name,
+        price: Number(price),
+        category,
+        imageUrl: imageUrl || '',
+      });
       setName('');
       setPrice('');
+      setImageUrl('');
     } finally {
       setLoading(false);
     }
@@ -47,78 +57,116 @@ export default function MenuPage() {
     await deleteDoc(doc(db, 'menu', id));
   };
 
-  const categories = ['フード', 'ドリンク', 'デザート'];
+  const saveImageUrl = async (id: string) => {
+    await updateDoc(doc(db, 'menu', id), { imageUrl: editImageUrl });
+    setEditingId(null);
+    setEditImageUrl('');
+  };
+
+  const categories = [
+    'フード', '一品料理', 'おつまみ', '前菜',
+    'ご飯・麺', 'ラーメン', '丼物', 'パスタ',
+    '肉料理', '魚料理', '野菜料理',
+    'ドリンク', 'アルコール', 'ノンアルコール',
+    'ビール', 'ワイン', 'カクテル', 'サワー',
+    'ソフトドリンク', 'お茶', 'コーヒー',
+    'デザート', 'スイーツ',
+    'セット', 'コース',
+    '本日のおすすめ', '季節限定',
+  ];
 
   return (
-    <div className="min-h-screen" style={{ background: '#1E293B' }}>
-      <div style={{ background: '#0F172A', padding: '16px 20px', display: 'flex', alignItems: 'center' }}>
-        <button
-          onClick={() => router.push('/dashboard')}
-          style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'rgba(255,255,255,0.85)', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', marginRight: '10px' }}
-        >
-          ← 戻る
+    <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', fontFamily: "'Noto Sans JP', sans-serif" }}>
+      <div style={{ backgroundColor: '#1e293b', borderBottom: '1px solid #334155', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <button onClick={() => router.push('/dashboard')}
+          style={{ background: 'transparent', border: 'none', color: '#f97316', fontSize: '14px', cursor: 'pointer', fontWeight: 700 }}>
+          ← ダッシュボード
         </button>
-        <p style={{ color: 'white', fontWeight: '700', fontSize: '16px', margin: 0 }}>メニュー管理</p>
+        <h1 style={{ color: '#f1f5f9', fontSize: '18px', fontWeight: 800, margin: 0 }}>🍽️ メニュー管理</h1>
       </div>
 
-      <div style={{ padding: '16px 20px' }}>
-        <div style={{ background: '#0F172A', borderRadius: '14px', padding: '16px', marginBottom: '20px' }}>
-          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '14px', fontWeight: '600', margin: '0 0 12px' }}>メニューを追加</p>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <input
-              type="text"
-              placeholder="メニュー名"
-              className="placeholder-white"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              style={{ flex: 1, minWidth: '120px', background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '10px 12px', color: 'rgba(255,255,255,0.85)', fontSize: '13px', outline: 'none' }}
-            />
-            <input
-              type="number"
-              placeholder="価格"
-              className="placeholder-white"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              style={{ width: '90px', background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '10px 12px', color: 'rgba(255,255,255,0.85)', fontSize: '13px', outline: 'none' }}
-            />
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              style={{ width: '100px', background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '10px 12px', color: 'rgba(255,255,255,0.85)', fontSize: '13px', outline: 'none' }}
-            >
+      <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+        {/* 追加フォーム */}
+        <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '20px', marginBottom: '24px' }}>
+          <p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700, margin: '0 0 14px', letterSpacing: '0.05em' }}>メニューを追加</p>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+            <input type="text" placeholder="メニュー名" value={name} onChange={(e) => setName(e.target.value)}
+              style={{ flex: 1, minWidth: '120px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '10px 12px', color: '#f1f5f9', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }} />
+            <input type="number" placeholder="価格" value={price} onChange={(e) => setPrice(e.target.value)}
+              style={{ width: '90px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '10px 12px', color: '#f1f5f9', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }} />
+            <select value={category} onChange={(e) => setCategory(e.target.value)}
+              style={{ width: '110px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '10px 12px', color: '#f1f5f9', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }}>
               {categories.map((c) => (
-                <option key={c} value={c} style={{ background: '#0F172A' }}>{c}</option>
+                <option key={c} value={c} style={{ background: '#0f172a' }}>{c}</option>
               ))}
             </select>
-            <button
-              onClick={addItem}
-              disabled={loading}
-              style={{ background: '#EA580C', border: 'none', color: 'white', fontSize: '13px', fontWeight: '600', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', opacity: loading ? 0.5 : 1 }}
-            >
+          </div>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
+            <input type="text" placeholder="画像URL（任意）例：https://i.ibb.co/xxx/image.jpg" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)}
+              style={{ flex: 1, background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '10px 12px', color: '#f1f5f9', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }} />
+            <button onClick={addItem} disabled={loading}
+              style={{ background: '#f97316', border: 'none', color: '#fff', fontSize: '13px', fontWeight: 700, padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', opacity: loading ? 0.5 : 1, fontFamily: 'inherit' }}>
               追加
             </button>
           </div>
+          <p style={{ color: '#64748b', fontSize: '11px', margin: '6px 0 0' }}>
+            💡 画像は <a href="https://imgbb.com" target="_blank" rel="noreferrer" style={{ color: '#f97316' }}>imgbb.com</a> に無料アップロードして「Direct link」のURLを貼ってください
+          </p>
         </div>
 
+        {/* メニュー一覧 */}
         {categories.map((cat) => {
           const catItems = items.filter((i) => i.category === cat);
           if (catItems.length === 0) return null;
           return (
-            <div key={cat} style={{ marginBottom: '16px' }}>
-              <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '14px', fontWeight: '600', margin: '0 0 10px' }}>{cat}</p>
+            <div key={cat} style={{ marginBottom: '24px' }}>
+              <p style={{ color: '#f97316', fontSize: '13px', fontWeight: 700, margin: '0 0 12px', letterSpacing: '0.05em' }}>{cat}</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {catItems.map((item) => (
-                  <div key={item.id} style={{ background: '#0F172A', borderRadius: '12px', padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <p style={{ color: 'white', fontWeight: '600', fontSize: '15px', margin: '0 0 2px' }}>{item.name}</p>
-                      <p style={{ color: '#EA580C', fontSize: '13px', fontWeight: '600', margin: 0 }}>¥{item.price}</p>
+                  <div key={item.id} style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', gap: '12px' }}>
+                      {/* 画像 */}
+                      <div style={{ width: '56px', height: '56px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {item.imageUrl ? (
+                          <img src={item.imageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <span style={{ fontSize: '24px' }}>🍽️</span>
+                        )}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '14px', margin: '0 0 2px' }}>{item.name}</p>
+                        <p style={{ color: '#f97316', fontSize: '13px', fontWeight: 700, margin: 0 }}>¥{item.price.toLocaleString()}</p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button onClick={() => { setEditingId(editingId === item.id ? null : item.id); setEditImageUrl(item.imageUrl || ''); }}
+                          style={{ background: '#1e3a5f', border: 'none', color: '#60a5fa', fontSize: '11px', fontWeight: 700, padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          🖼️ 画像
+                        </button>
+                        <button onClick={() => deleteItem(item.id)}
+                          style={{ background: 'rgba(239,68,68,0.15)', border: 'none', color: '#ef4444', fontSize: '11px', fontWeight: 700, padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          削除
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => deleteItem(item.id)}
-                      style={{ background: 'rgba(239,68,68,0.15)', border: 'none', color: '#EF4444', fontSize: '12px', fontWeight: '600', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer' }}
-                    >
-                      削除
-                    </button>
+
+                    {/* 画像URL編集 */}
+                    {editingId === item.id && (
+                      <div style={{ borderTop: '1px solid #334155', padding: '12px 16px', background: '#0f172a' }}>
+                        <p style={{ color: '#94a3b8', fontSize: '11px', margin: '0 0 8px' }}>画像URLを入力してください</p>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input type="text" placeholder="https://i.ibb.co/xxx/image.jpg" value={editImageUrl} onChange={(e) => setEditImageUrl(e.target.value)}
+                            style={{ flex: 1, background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', padding: '8px 12px', color: '#f1f5f9', fontSize: '12px', outline: 'none', fontFamily: 'inherit' }} />
+                          <button onClick={() => saveImageUrl(item.id)}
+                            style={{ background: '#f97316', border: 'none', color: '#fff', fontSize: '12px', fontWeight: 700, padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                            保存
+                          </button>
+                          <button onClick={() => setEditingId(null)}
+                            style={{ background: '#334155', border: 'none', color: '#94a3b8', fontSize: '12px', fontWeight: 700, padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                            キャンセル
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -127,8 +175,8 @@ export default function MenuPage() {
         })}
 
         {items.length === 0 && (
-          <div style={{ background: '#0F172A', borderRadius: '14px', padding: '40px', textAlign: 'center' }}>
-            <p style={{ color: 'rgba(255,255,255,0.4)', margin: 0 }}>メニューがまだありません</p>
+          <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '48px', textAlign: 'center' }}>
+            <p style={{ color: '#64748b', margin: 0 }}>メニューがまだありません</p>
           </div>
         )}
       </div>
