@@ -756,50 +756,87 @@ function StoreView({ shared }: { shared: SharedState }) {
   </div>
 )}
             {manageTab === 'settings' && (
-              <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
-                <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
-                  <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>基本設定</p>
-                  <div style={{ marginBottom: '10px' }}>
-                    <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 4px' }}>店舗名</p>
-                    <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '7px 10px', color: N.muted, fontSize: '11px' }}>麺屋 雅</div>
-                  </div>
-                  <div>
-                    <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 4px' }}>総席数</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '7px 10px', color: N.accent, fontSize: '14px', fontWeight: 800 }}>20</div>
-                      <span style={{ color: N.muted, fontSize: '10px' }}>席</span>
-                    </div>
-                  </div>
-                </div>
-                <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
-                  <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>お支払い設定</p>
-                  <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 6px' }}>お支払いスタイル</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ background: '#1c0a00', border: '1px solid #f97316', borderRadius: '8px', padding: '8px 10px' }}>
-                      <p style={{ color: '#f97316', fontSize: '10px', fontWeight: 700, margin: 0 }}>⏳ スタッフがお伺い ✓</p>
-                    </div>
-                    <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '8px', padding: '8px 10px' }}>
-                      <p style={{ color: N.muted, fontSize: '10px', margin: 0 }}>🏧 キャッシャーへご案内</p>
-                    </div>
-                  </div>
-                </div>
-                <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px' }}>
-                  <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>待ち行列設定</p>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: 0 }}>待ち行列機能</p>
-                    <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: '#f97316', position: 'relative' }}>
-                      <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', left: '18px' }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
+  <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
+    <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
+      <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>基本設定</p>
+      <div style={{ marginBottom: '10px' }}>
+        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 4px' }}>店舗名</p>
+        <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '7px 10px', color: N.muted, fontSize: '11px' }}>麺屋 雅</div>
+      </div>
+      <div>
+        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 4px' }}>総席数</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '7px 10px', color: N.accent, fontSize: '14px', fontWeight: 800 }}>20</div>
+          <span style={{ color: N.muted, fontSize: '10px' }}>席</span>
+        </div>
+      </div>
+    </div>
+
+    <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
+      <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>お支払い設定</p>
+      <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 6px' }}>お支払いスタイル</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ background: '#1c0a00', border: '1px solid #f97316', borderRadius: '8px', padding: '8px 10px' }}>
+          <p style={{ color: '#f97316', fontSize: '10px', fontWeight: 700, margin: 0 }}>⏳ スタッフがお伺い ✓</p>
+        </div>
+        <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '8px', padding: '8px 10px' }}>
+          <p style={{ color: N.muted, fontSize: '10px', margin: 0 }}>🏧 キャッシャーへご案内</p>
+        </div>
+      </div>
+    </div>
+
+    <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
+      <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>待ち行列設定</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: 0 }}>待ち行列機能</p>
+        <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: '#f97316', position: 'relative' }}>
+          <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', left: '18px' }} />
+        </div>
+      </div>
+      <div style={{ marginBottom: '10px' }}>
+        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 4px' }}>1組あたりの待ち時間目安</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '5px 10px', color: N.accent, fontSize: '13px', fontWeight: 800 }}>15</div>
+          <span style={{ color: N.muted, fontSize: '10px' }}>分 / 組</span>
+        </div>
+      </div>
+      <div>
+        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 4px' }}>最大受付組数</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '5px 10px', color: N.accent, fontSize: '13px', fontWeight: 800 }}>10</div>
+          <span style={{ color: N.muted, fontSize: '10px' }}>組まで</span>
+        </div>
+      </div>
+    </div>
+
+    <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px' }}>
+      <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>注文設定</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <div>
+          <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 2px' }}>追加注文</p>
+          <p style={{ color: N.muted, fontSize: '9px', margin: 0 }}>最初の注文後に追加注文を許可するか</p>
+        </div>
+        <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: '#f97316', position: 'relative' }}>
+          <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', left: '18px' }} />
+        </div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 2px' }}>時間制限</p>
+          <p style={{ color: N.muted, fontSize: '9px', margin: 0 }}>席の利用時間に制限を設ける</p>
+        </div>
+        <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: '#334155', position: 'relative' }}>
+          <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', left: '2px' }} />
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+</>
         )}
       </div>
     );
   }
-  
   export default function DemoPage() {
     const [page, setPage] = useState<'landing' | 'demo'>('landing');
     const [demoMode, setDemoMode] = useState<'split' | 'customer' | 'store'>('split');
