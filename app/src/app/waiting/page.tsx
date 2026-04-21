@@ -97,7 +97,7 @@ const C = {
 };
 
 type StoreStatus = { totalSeats: number; occupiedSeats: number; isOpen: boolean; };
-type WaitlistEntry = { id: string; name: string; partySize: number; status: 'waiting' | 'ready' | 'seated'; position: number; createdAt: { seconds: number } | null; };
+type WaitlistEntry = { id: string; name: string; partySize: number; status: 'waiting' | 'soon' | 'ready' | 'seated'; position: number; createdAt: { seconds: number } | null; };
 
 function WaitingForm() {
   const searchParams = useSearchParams();
@@ -115,12 +115,12 @@ function WaitingForm() {
 
   useEffect(() => {
     const unsubStatus = onSnapshot(doc(db, 'store_status', 'main'), (snap) => {
-        if (snap.exists()) {
-          const data = snap.data();
-          setStoreStatus(data as StoreStatus);
-          if (data.storeName) setStoreName(data.storeName);
-        }
-      });
+      if (snap.exists()) {
+        const data = snap.data();
+        setStoreStatus(data as StoreStatus);
+        if (data.storeName) setStoreName(data.storeName);
+      }
+    });
     const q = query(collection(db, 'waitlist'), orderBy('createdAt', 'asc'));
     const unsubWait = onSnapshot(q, (snap) => {
       const data = snap.docs.map((d, i) => ({ id: d.id, ...d.data(), position: i + 1 })) as WaitlistEntry[];
@@ -181,6 +181,21 @@ function WaitingForm() {
                 style={{ width: '100%', background: C.amber, border: 'none', color: C.bg, fontSize: '15px', fontWeight: 800, padding: '14px', borderRadius: '12px', cursor: 'pointer' }}>
                 {t.enterAndOrder}
               </button>
+            </div>
+          ) : myEntry.status === 'soon' ? (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '56px', marginBottom: '16px' }}>⏰</div>
+              <div style={{ fontSize: '22px', fontWeight: 800, color: '#93c5fd', marginBottom: '8px' }}>
+                {lang === 'ja' ? 'もうすぐお呼びします' : lang === 'en' ? 'Almost your turn!' : lang === 'ko' ? '곧 안내해 드립니다' : '即将为您安排座位'}
+              </div>
+              <div style={{ fontSize: '13px', color: C.muted, marginBottom: '28px' }}>
+                {lang === 'ja' ? '準備をしてお待ちください' : lang === 'en' ? 'Please be ready' : lang === 'ko' ? '준비해 주세요' : '请做好准备'}
+              </div>
+              <div style={{ background: '#1e3a5f', border: '1px solid #3b82f6', borderRadius: '16px', padding: '20px', textAlign: 'center' }}>
+                <p style={{ color: '#93c5fd', fontSize: '13px', margin: 0 }}>
+                  {lang === 'ja' ? '間もなくスタッフがご案内します。近くでお待ちください。' : lang === 'en' ? 'A staff member will call you shortly. Please stay nearby.' : lang === 'ko' ? '직원이 곧 안내해 드립니다. 근처에서 기다려 주세요.' : '工作人员即将为您引导。请在附近等候。'}
+                </p>
+              </div>
             </div>
           ) : (
             <div>

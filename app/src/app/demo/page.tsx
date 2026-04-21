@@ -430,9 +430,10 @@ function CustomerView({ shared }: { shared: SharedState }) {
   );
 }
 function StoreView({ shared }: { shared: SharedState }) {
-    const [activeTab, setActiveTab] = useState<'tables' | 'orders' | 'calls' | 'kitchen'>('tables');
+    const [activeTab, setActiveTab] = useState<'home' | 'tables' | 'orders' | 'calls' | 'kitchen'>('home');
     const [manageTab, setManageTab] = useState<'sales' | 'menu' | 'qr' | 'settings'>('sales');
     const [mode, setMode] = useState<'operation' | 'manage'>('operation');
+    const [manageScreen, setManageScreen] = useState<'sales' | 'menu' | 'qr' | 'settings' | null>(null);
   
     const TAB = (active: boolean) => ({ flex: 1, padding: '7px 4px', fontSize: '9px', fontWeight: 700 as const, color: active ? N.accent : N.muted, background: 'transparent', border: 'none', borderBottom: active ? `2px solid ${N.accent}` : '2px solid transparent', cursor: 'pointer', fontFamily: 'inherit' });
   
@@ -472,6 +473,7 @@ function StoreView({ shared }: { shared: SharedState }) {
   
     return (
       <div style={{ background: N.bg, height: '100%', display: 'flex', flexDirection: 'column', fontFamily: 'inherit', color: N.txt }}>
+        {/* ヘッダー */}
         <div style={{ background: N.surf, borderBottom: `1px solid ${N.bdr}`, padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ fontSize: '12px', fontWeight: 800 }}>麺屋 雅</div>
           <div style={{ display: 'flex', gap: '4px' }}>
@@ -480,33 +482,289 @@ function StoreView({ shared }: { shared: SharedState }) {
           </div>
         </div>
   
-        {/* モード切り替え */}
-        <div style={{ background: N.surf, borderBottom: `1px solid ${N.bdr}`, display: 'flex', flexShrink: 0 }}>
-          <button onClick={() => setMode('operation')}
-            style={{ flex: 1, padding: '7px 4px', fontSize: '9px', fontWeight: 700, color: mode === 'operation' ? N.accent : N.muted, background: 'transparent', border: 'none', borderBottom: mode === 'operation' ? `2px solid ${N.accent}` : '2px solid transparent', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
-            🏪 営業中
-            {totalBadge > 0 && <span style={{ background: '#ef4444', color: '#fff', borderRadius: '8px', padding: '0px 4px', fontSize: '8px', fontWeight: 700 }}>{totalBadge}</span>}
-          </button>
-          <button onClick={() => setMode('manage')}
-            style={{ flex: 1, padding: '7px 4px', fontSize: '9px', fontWeight: 700, color: mode === 'manage' ? N.accent : N.muted, background: 'transparent', border: 'none', borderBottom: mode === 'manage' ? `2px solid ${N.accent}` : '2px solid transparent', cursor: 'pointer', fontFamily: 'inherit' }}>
-            ⚙️ 管理
-          </button>
-        </div>
-  
-        {/* 営業中モード */}
-        {mode === 'operation' && (
+        {/* ホーム画面 */}
+        {activeTab === 'home' && (
           <>
+            {/* 営業中/管理 切替タブ */}
             <div style={{ background: N.surf, borderBottom: `1px solid ${N.bdr}`, display: 'flex', flexShrink: 0 }}>
-              <button style={TAB(activeTab === 'tables')} onClick={() => setActiveTab('tables')}>テーブル</button>
-              <button style={TAB(activeTab === 'orders')} onClick={() => setActiveTab('orders')}>
-                注文{pendingOrders.length > 0 && <span style={{ color: '#ef4444' }}> {pendingOrders.length}</span>}
+              <button onClick={() => setMode('operation')}
+                style={{ flex: 1, padding: '7px 4px', fontSize: '9px', fontWeight: 700, color: mode === 'operation' ? N.accent : N.muted, background: 'transparent', border: 'none', borderBottom: mode === 'operation' ? `2px solid ${N.accent}` : '2px solid transparent', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+                🏪 営業中
+                {totalBadge > 0 && <span style={{ background: '#ef4444', color: '#fff', borderRadius: '8px', padding: '0px 4px', fontSize: '8px', fontWeight: 700 }}>{totalBadge}</span>}
               </button>
-              <button style={TAB(activeTab === 'calls')} onClick={() => setActiveTab('calls')}>
-                呼出{pendingCalls.length > 0 && <span style={{ color: '#ef4444' }}> {pendingCalls.length}</span>}
+              <button onClick={() => setMode('manage')}
+                style={{ flex: 1, padding: '7px 4px', fontSize: '9px', fontWeight: 700, color: mode === 'manage' ? N.accent : N.muted, background: 'transparent', border: 'none', borderBottom: mode === 'manage' ? `2px solid ${N.accent}` : '2px solid transparent', cursor: 'pointer', fontFamily: 'inherit' }}>
+                ⚙️ 管理
               </button>
-              <button style={TAB(activeTab === 'kitchen')} onClick={() => setActiveTab('kitchen')}>キッチン</button>
             </div>
   
+            {/* 営業中モード：カードグリッド */}
+            {mode === 'operation' && (
+              <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
+                {pendingOrders.length > 0 && (
+                  <div onClick={() => setActiveTab('orders')} style={{ background: '#2a0a0a', border: '1px solid #ef4444', borderRadius: '10px', padding: '10px 12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <span style={{ color: '#fca5a5', fontSize: '11px', fontWeight: 700 }}>🔴 新しい注文が{pendingOrders.length}件あります</span>
+                    <span style={{ color: '#ef4444', fontSize: '10px' }}>確認 →</span>
+                  </div>
+                )}
+                {pendingCalls.length > 0 && (
+                  <div onClick={() => setActiveTab('calls')} style={{ background: '#2a1a00', border: '1px solid #f59e0b', borderRadius: '10px', padding: '10px 12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <span style={{ color: '#fcd34d', fontSize: '11px', fontWeight: 700 }}>🔔 スタッフ呼び出しが{pendingCalls.length}件あります</span>
+                    <span style={{ color: '#f59e0b', fontSize: '10px' }}>確認 →</span>
+                  </div>
+                )}
+                {shared.tableStatus === 'billing' && (
+                  <div onClick={() => setActiveTab('tables')} style={{ background: '#2a1f08', border: '1px solid #f59e0b', borderRadius: '10px', padding: '10px 12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <span style={{ color: '#f59e0b', fontSize: '11px', fontWeight: 700 }}>💳 会計待ちが1件あります</span>
+                    <span style={{ color: '#f59e0b', fontSize: '10px' }}>確認 →</span>
+                  </div>
+                )}
+                <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '8px 0 6px', letterSpacing: '0.05em' }}>営業中メニュー</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  {[
+                    { id: 'orders', emoji: '📋', label: '注文管理', sub: 'リアルタイムで確認・管理', badge: pendingOrders.length, color: pendingOrders.length > 0 ? '#ef4444' : N.accent },
+                    { id: 'tables', emoji: '🪑', label: 'テーブル管理', sub: 'テーブルの状態を管理', badge: 0, color: N.accent },
+                    { id: 'kitchen', emoji: '👨‍🍳', label: 'キッチン', sub: 'キッチン用注文管理', badge: 0, color: N.accent },
+                    { id: 'calls', emoji: '🔔', label: 'スタッフ呼び出し', sub: '呼び出し通知をリアルタイム確認', badge: pendingCalls.length, color: pendingCalls.length > 0 ? '#f59e0b' : N.accent },
+                    { id: 'tables', emoji: '💳', label: 'お会計管理', sub: 'お会計リクエストを確認', badge: shared.tableStatus === 'billing' ? 1 : 0, color: shared.tableStatus === 'billing' ? '#f59e0b' : N.accent },
+                    { id: 'tables', emoji: '👥', label: '待ち行列管理', sub: '混雑状況・ウェイティング管理', badge: waitingList.length, color: waitingList.length > 0 ? '#3b82f6' : N.accent },
+                  ].map((card) => (
+                    <div key={card.label} onClick={() => setActiveTab(card.id as any)}
+                      style={{ background: card.badge > 0 ? (card.id === 'orders' ? '#2a0a0a' : card.color === '#3b82f6' ? '#1e3a5f' : '#2a1a00') : N.surf, border: `1px solid ${card.badge > 0 ? card.color : N.bdr}`, borderRadius: '10px', padding: '12px', cursor: 'pointer', position: 'relative' }}>
+                      {card.badge > 0 && (
+                        <div style={{ position: 'absolute', top: '8px', right: '8px', background: card.color, color: '#fff', borderRadius: '10px', padding: '1px 6px', fontSize: '9px', fontWeight: 700 }}>{card.badge}</div>
+                      )}
+                      <div style={{ fontSize: '20px', marginBottom: '6px' }}>{card.emoji}</div>
+                      <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 2px' }}>{card.label}</p>
+                      <p style={{ color: N.muted, fontSize: '9px', margin: 0 }}>{card.sub}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+  
+            {/* 管理モード：売上/メニュー/QR/設定 */}
+            {mode === 'manage' && (
+  <>
+    {manageScreen === null ? (
+      <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
+        <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '8px 0 6px', letterSpacing: '0.05em' }}>管理メニュー</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          {[
+            { id: 'menu', emoji: '🍽️', label: 'メニュー管理', sub: 'メニューの追加・削除' },
+            { id: 'qr', emoji: '📱', label: 'QRコード', sub: 'テーブルごとのQR生成' },
+            { id: 'sales', emoji: '📊', label: '売上管理', sub: '売上・注文履歴の確認' },
+            { id: 'settings', emoji: '⚙️', label: '店舗設定', sub: '支払い・待ち行列・席数などを設定' },
+          ].map((card) => (
+            <div key={card.id} onClick={() => setManageScreen(card.id as any)}
+              style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '12px', cursor: 'pointer' }}>
+              <div style={{ fontSize: '20px', marginBottom: '6px' }}>{card.emoji}</div>
+              <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 2px' }}>{card.label}</p>
+              <p style={{ color: N.muted, fontSize: '9px', margin: 0 }}>{card.sub}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : (
+      <>
+        <div style={{ background: N.surf, borderBottom: `1px solid ${N.bdr}`, display: 'flex', flexShrink: 0 }}>
+          <button onClick={() => setManageScreen(null)} style={{ padding: '7px 10px', fontSize: '9px', fontWeight: 700, color: N.muted, background: 'transparent', border: 'none', borderBottom: '2px solid transparent', cursor: 'pointer', fontFamily: 'inherit' }}>← 戻る</button>
+          <span style={{ padding: '7px 4px', fontSize: '9px', fontWeight: 700, color: N.accent, borderBottom: `2px solid ${N.accent}` }}>
+            {manageScreen === 'sales' ? '売上' : manageScreen === 'menu' ? 'メニュー' : manageScreen === 'qr' ? 'QR' : '設定'}
+          </span>
+        </div>
+
+        {manageScreen === 'sales' && (
+          <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+              <div style={{ background: N.surf, border: '1px solid #334155', borderRadius: '10px', padding: '12px', borderTop: '3px solid #f97316' }}>
+                <p style={{ color: N.muted, fontSize: '10px', margin: '0 0 4px' }}>本日売上</p>
+                <p style={{ color: N.accent, fontWeight: 800, fontSize: '20px', margin: 0 }}>¥{totalSales.toLocaleString()}</p>
+              </div>
+              <div style={{ background: N.surf, border: '1px solid #334155', borderRadius: '10px', padding: '12px', borderTop: '3px solid #22c55e' }}>
+                <p style={{ color: N.muted, fontSize: '10px', margin: '0 0 4px' }}>完了注文</p>
+                <p style={{ color: '#22c55e', fontWeight: 800, fontSize: '20px', margin: 0 }}>{shared.orders.filter((o) => o.status === 'done').length}件</p>
+              </div>
+            </div>
+            <p style={{ color: N.muted, fontSize: '10px', fontWeight: 700, margin: '0 0 8px' }}>メニュー別売上</p>
+            {menuRanking.length === 0 ? (
+              <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '16px', textAlign: 'center' }}>
+                <p style={{ color: N.muted, fontSize: '11px', margin: 0 }}>完了した注文がありません</p>
+              </div>
+            ) : menuRanking.map(([name, stats], i) => (
+              <div key={name} style={{ background: N.surf, border: `1px solid ${i === 0 ? N.accent : N.bdr}`, borderRadius: '10px', padding: '10px 12px', marginBottom: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ background: i === 0 ? N.accent : '#334155', color: '#fff', borderRadius: '4px', padding: '1px 6px', fontSize: '9px', fontWeight: 700 }}>{i + 1}位</span>
+                    <span style={{ color: N.txt, fontSize: '12px', fontWeight: 700 }}>{name}</span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ color: N.accent, fontSize: '12px', fontWeight: 700, margin: 0 }}>¥{stats.total.toLocaleString()}</p>
+                    <p style={{ color: N.muted, fontSize: '10px', margin: 0 }}>{stats.qty}個</p>
+                  </div>
+                </div>
+                <div style={{ background: '#0f172a', borderRadius: '3px', height: '4px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', background: i === 0 ? N.accent : '#334155', width: `${(stats.total / (menuRanking[0]?.[1].total || 1)) * 100}%`, borderRadius: '3px' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {manageScreen === 'menu' && (
+          <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
+            <p style={{ color: N.muted, fontSize: '10px', fontWeight: 700, margin: '0 0 8px' }}>メニュー一覧</p>
+            {Object.entries(MENU).map(([cat, items]) => (
+              <div key={cat} style={{ marginBottom: '12px' }}>
+                <p style={{ color: N.accent, fontSize: '10px', fontWeight: 700, margin: '0 0 6px' }}>{cat}</p>
+                {items.map((item) => (
+                  <div key={item.id} style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '8px', padding: '8px 12px', marginBottom: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: N.txt, fontSize: '11px' }}>{item.emoji} {item.name}</span>
+                    <span style={{ color: N.accent, fontSize: '11px', fontWeight: 700 }}>¥{item.price.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+            <div style={{ background: '#1c0a00', border: '1px solid #f97316', borderRadius: '10px', padding: '10px', textAlign: 'center' }}>
+              <p style={{ color: '#f97316', fontSize: '10px', fontWeight: 700, margin: 0 }}>＋ メニューを追加する</p>
+            </div>
+          </div>
+        )}
+
+        {manageScreen === 'qr' && (
+          <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
+            <p style={{ color: N.muted, fontSize: '10px', fontWeight: 700, margin: '0 0 8px' }}>QRコード一覧</p>
+            <p style={{ color: N.muted, fontSize: '10px', margin: '0 0 12px' }}>各テーブルのQRコードを印刷して席に置いてください</p>
+            {[
+              { num: 1, type: 'テーブル', emoji: '🪑' },
+              { num: 2, type: 'テーブル', emoji: '🪑' },
+              { num: 3, type: 'テーブル', emoji: '🪑' },
+              { num: 4, type: 'カウンター', emoji: '🍺' },
+            ].map((table) => (
+              <div key={table.num} style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '12px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ background: '#ffffff', padding: '6px', borderRadius: '8px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '2px' }}>
+                    {[1,1,1,1,1,1,0,0,0,1,1,0,1,0,1,1,0,0,0,1,1,1,1,1,1].map((v, i) => (
+                      <div key={i} style={{ width: '6px', height: '6px', background: v ? '#000' : '#fff' }} />
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p style={{ color: N.txt, fontSize: '12px', fontWeight: 700, margin: '0 0 2px' }}>{table.emoji} {table.type} {table.num}番</p>
+                  <p style={{ color: N.muted, fontSize: '10px', margin: 0 }}>irasse.vercel.app/order?table={table.num}</p>
+                </div>
+              </div>
+            ))}
+            <div style={{ background: '#1c0a00', border: '1px solid #f97316', borderRadius: '10px', padding: '10px', textAlign: 'center', marginTop: '8px' }}>
+              <p style={{ color: '#f97316', fontSize: '10px', fontWeight: 700, margin: 0 }}>🖨️ 実際のQRは管理画面 → QRコードから印刷できます</p>
+            </div>
+          </div>
+        )}
+
+{manageScreen === 'settings' && (
+  <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
+    <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
+      <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>基本設定</p>
+      <div style={{ marginBottom: '10px' }}>
+        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 2px' }}>店舗名</p>
+        <p style={{ color: N.muted, fontSize: '9px', margin: '0 0 6px' }}>客側の画面に表示される店舗名です</p>
+        <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '7px 10px', color: N.muted, fontSize: '11px' }}>麺屋 雅</div>
+      </div>
+      <div>
+        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 2px' }}>総席数</p>
+        <p style={{ color: N.muted, fontSize: '9px', margin: '0 0 6px' }}>店内の総席数（混雑状況の計算に使います）</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '7px 10px', color: N.accent, fontSize: '14px', fontWeight: 800 }}>20</div>
+          <span style={{ color: N.muted, fontSize: '10px' }}>席</span>
+        </div>
+      </div>
+    </div>
+
+    <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
+      <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>お支払い設定</p>
+      <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 2px' }}>お支払いスタイル</p>
+      <p style={{ color: N.muted, fontSize: '9px', margin: '0 0 6px' }}>客がお支払いボタンを押した後の案内方法</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ background: '#1c0a00', border: '1px solid #f97316', borderRadius: '8px', padding: '8px 10px' }}>
+          <p style={{ color: '#f97316', fontSize: '10px', fontWeight: 700, margin: '0 0 2px' }}>⏳ スタッフがお伺い ✓</p>
+          <p style={{ color: N.muted, fontSize: '9px', margin: 0 }}>「そのままお待ちください」と表示してスタッフが伺います</p>
+        </div>
+        <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '8px', padding: '8px 10px' }}>
+          <p style={{ color: N.muted, fontSize: '10px', margin: '0 0 2px' }}>🏧 キャッシャーへご案内</p>
+          <p style={{ color: N.muted, fontSize: '9px', margin: 0 }}>「レジまでお越しください」と表示します</p>
+        </div>
+      </div>
+    </div>
+
+    <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
+      <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>待ち行列設定</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: 0 }}>待ち行列機能</p>
+        <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: '#f97316', position: 'relative' }}>
+          <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', left: '18px' }} />
+        </div>
+      </div>
+      <p style={{ color: N.muted, fontSize: '9px', margin: '0 0 10px' }}>ONにすると客がQRから順番待ち登録できます</p>
+      <div style={{ marginBottom: '10px' }}>
+        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 2px' }}>1組あたりの待ち時間目安</p>
+        <p style={{ color: N.muted, fontSize: '9px', margin: '0 0 6px' }}>「約◯分待ち」の計算に使います</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '5px 10px', color: N.accent, fontSize: '13px', fontWeight: 800 }}>15</div>
+          <span style={{ color: N.muted, fontSize: '10px' }}>分 / 組</span>
+        </div>
+      </div>
+      <div>
+        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 2px' }}>最大受付組数</p>
+        <p style={{ color: N.muted, fontSize: '9px', margin: '0 0 6px' }}>これを超えると新規の待ち登録ができなくなります</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '5px 10px', color: N.accent, fontSize: '13px', fontWeight: 800 }}>10</div>
+          <span style={{ color: N.muted, fontSize: '10px' }}>組まで</span>
+        </div>
+      </div>
+    </div>
+
+    <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px' }}>
+      <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>注文設定</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+        <div>
+          <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 2px' }}>追加注文</p>
+          <p style={{ color: N.muted, fontSize: '9px', margin: 0 }}>最初の注文後に追加注文を許可するか</p>
+        </div>
+        <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: '#f97316', position: 'relative' }}>
+          <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', left: '18px' }} />
+        </div>
+      </div>
+      <div style={{ height: '1px', background: N.bdr, margin: '10px 0' }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+        <div>
+          <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 2px' }}>時間制限</p>
+          <p style={{ color: N.muted, fontSize: '9px', margin: 0 }}>席の利用時間に制限を設ける</p>
+        </div>
+        <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: '#334155', position: 'relative' }}>
+          <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', left: '2px' }} />
+        </div>
+      </div>
+      <p style={{ color: N.muted, fontSize: '9px', margin: '0 0 10px' }}>※ ONにすると制限時間（分）を設定できます</p>
+      <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '8px', padding: '8px 10px' }}>
+        <p style={{ color: N.muted, fontSize: '9px', margin: '0 0 4px' }}>制限時間（時間制限ONの場合）</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '5px 10px', color: N.muted, fontSize: '13px', fontWeight: 800 }}>90</div>
+          <span style={{ color: N.muted, fontSize: '10px' }}>分</span>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+      </>
+    )}
+  </>
+)}
+          </>
+        )}
+
+        {/* 営業中サブ画面（テーブル・注文・呼出・キッチン） */}
+        {activeTab !== 'home' && (
+          <>
             {(shared.tableStatus === 'billing' || shared.tableStatus === 'paid') && activeTab === 'tables' && (
               <div style={{ padding: '8px 10px', flexShrink: 0 }}>
                 {shared.tableStatus === 'billing' && (
@@ -521,6 +779,17 @@ function StoreView({ shared }: { shared: SharedState }) {
                 )}
               </div>
             )}
+            <div style={{ background: N.surf, borderBottom: `1px solid ${N.bdr}`, display: 'flex', flexShrink: 0 }}>
+              <button onClick={() => setActiveTab('home')} style={{ padding: '7px 10px', fontSize: '9px', fontWeight: 700, color: N.muted, background: 'transparent', border: 'none', borderBottom: '2px solid transparent', cursor: 'pointer', fontFamily: 'inherit' }}>← 戻る</button>
+              <button style={TAB(activeTab === 'tables')} onClick={() => setActiveTab('tables')}>テーブル</button>
+              <button style={TAB(activeTab === 'orders')} onClick={() => setActiveTab('orders')}>
+                注文{pendingOrders.length > 0 && <span style={{ color: '#ef4444' }}> {pendingOrders.length}</span>}
+              </button>
+              <button style={TAB(activeTab === 'calls')} onClick={() => setActiveTab('calls')}>
+                呼出{pendingCalls.length > 0 && <span style={{ color: '#ef4444' }}> {pendingCalls.length}</span>}
+              </button>
+              <button style={TAB(activeTab === 'kitchen')} onClick={() => setActiveTab('kitchen')}>キッチン</button>
+            </div>
   
             {activeTab === 'tables' && (
               <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
@@ -657,182 +926,6 @@ function StoreView({ shared }: { shared: SharedState }) {
               </div>
             )}
           </>
-        )}
-  
-        {/* 管理モード */}
-        {mode === 'manage' && (
-          <>
-            <div style={{ background: N.surf, borderBottom: `1px solid ${N.bdr}`, display: 'flex', flexShrink: 0 }}>
-            <button style={TAB(manageTab === 'sales')} onClick={() => setManageTab('sales')}>売上</button>
-            <button style={TAB(manageTab === 'menu')} onClick={() => setManageTab('menu')}>メニュー</button>
-            <button style={TAB(manageTab === 'qr')} onClick={() => setManageTab('qr')}>QR</button>
-            <button style={TAB(manageTab === 'settings')} onClick={() => setManageTab('settings')}>設定</button>
-            </div>
-  
-            {manageTab === 'sales' && (
-              <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-                  <div style={{ background: N.surf, border: '1px solid #334155', borderRadius: '10px', padding: '12px', borderTop: '3px solid #f97316' }}>
-                    <p style={{ color: N.muted, fontSize: '10px', margin: '0 0 4px' }}>本日売上</p>
-                    <p style={{ color: N.accent, fontWeight: 800, fontSize: '20px', margin: 0 }}>¥{totalSales.toLocaleString()}</p>
-                  </div>
-                  <div style={{ background: N.surf, border: '1px solid #334155', borderRadius: '10px', padding: '12px', borderTop: '3px solid #22c55e' }}>
-                    <p style={{ color: N.muted, fontSize: '10px', margin: '0 0 4px' }}>完了注文</p>
-                    <p style={{ color: '#22c55e', fontWeight: 800, fontSize: '20px', margin: 0 }}>{shared.orders.filter((o) => o.status === 'done').length}件</p>
-                  </div>
-                </div>
-                <p style={{ color: N.muted, fontSize: '10px', fontWeight: 700, margin: '0 0 8px' }}>メニュー別売上</p>
-                {menuRanking.length === 0 ? (
-                  <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '16px', textAlign: 'center' }}>
-                    <p style={{ color: N.muted, fontSize: '11px', margin: 0 }}>完了した注文がありません</p>
-                  </div>
-                ) : menuRanking.map(([name, stats], i) => (
-                  <div key={name} style={{ background: N.surf, border: `1px solid ${i === 0 ? N.accent : N.bdr}`, borderRadius: '10px', padding: '10px 12px', marginBottom: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ background: i === 0 ? N.accent : '#334155', color: '#fff', borderRadius: '4px', padding: '1px 6px', fontSize: '9px', fontWeight: 700 }}>{i + 1}位</span>
-                        <span style={{ color: N.txt, fontSize: '12px', fontWeight: 700 }}>{name}</span>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <p style={{ color: N.accent, fontSize: '12px', fontWeight: 700, margin: 0 }}>¥{stats.total.toLocaleString()}</p>
-                        <p style={{ color: N.muted, fontSize: '10px', margin: 0 }}>{stats.qty}個</p>
-                      </div>
-                    </div>
-                    <div style={{ background: '#0f172a', borderRadius: '3px', height: '4px', overflow: 'hidden' }}>
-                      <div style={{ height: '100%', background: i === 0 ? N.accent : '#334155', width: `${(stats.total / (menuRanking[0]?.[1].total || 1)) * 100}%`, borderRadius: '3px' }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-  
-            {manageTab === 'menu' && (
-              <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
-                <p style={{ color: N.muted, fontSize: '10px', fontWeight: 700, margin: '0 0 8px' }}>メニュー一覧</p>
-                {Object.entries(MENU).map(([cat, items]) => (
-                  <div key={cat} style={{ marginBottom: '12px' }}>
-                    <p style={{ color: N.accent, fontSize: '10px', fontWeight: 700, margin: '0 0 6px' }}>{cat}</p>
-                    {items.map((item) => (
-                      <div key={item.id} style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '8px', padding: '8px 12px', marginBottom: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ color: N.txt, fontSize: '11px' }}>{item.emoji} {item.name}</span>
-                        <span style={{ color: N.accent, fontSize: '11px', fontWeight: 700 }}>¥{item.price.toLocaleString()}</span>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-                <div style={{ background: '#1c0a00', border: '1px solid #f97316', borderRadius: '10px', padding: '10px', textAlign: 'center' }}>
-                  <p style={{ color: '#f97316', fontSize: '10px', fontWeight: 700, margin: 0 }}>＋ メニューを追加する</p>
-                </div>
-              </div>
-            )}
-  
-  {manageTab === 'qr' && (
-  <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
-    <p style={{ color: N.muted, fontSize: '10px', fontWeight: 700, margin: '0 0 8px' }}>QRコード一覧</p>
-    <p style={{ color: N.muted, fontSize: '10px', margin: '0 0 12px' }}>各テーブルのQRコードを印刷して席に置いてください</p>
-    {[
-      { num: 1, type: 'テーブル', emoji: '🪑' },
-      { num: 2, type: 'テーブル', emoji: '🪑' },
-      { num: 3, type: 'テーブル', emoji: '🪑' },
-      { num: 4, type: 'カウンター', emoji: '🍺' },
-    ].map((table) => (
-      <div key={table.num} style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '12px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ background: '#ffffff', padding: '6px', borderRadius: '8px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '2px' }}>
-            {[1,1,1,1,1,1,0,0,0,1,1,0,1,0,1,1,0,0,0,1,1,1,1,1,1].map((v, i) => (
-              <div key={i} style={{ width: '6px', height: '6px', background: v ? '#000' : '#fff' }} />
-            ))}
-          </div>
-        </div>
-        <div>
-          <p style={{ color: N.txt, fontSize: '12px', fontWeight: 700, margin: '0 0 2px' }}>{table.emoji} {table.type} {table.num}番</p>
-          <p style={{ color: N.muted, fontSize: '10px', margin: 0 }}>irasse.vercel.app/order?table={table.num}</p>
-        </div>
-      </div>
-    ))}
-    <div style={{ background: '#1c0a00', border: '1px solid #f97316', borderRadius: '10px', padding: '10px', textAlign: 'center', marginTop: '8px' }}>
-      <p style={{ color: '#f97316', fontSize: '10px', fontWeight: 700, margin: 0 }}>🖨️ 実際のQRは管理画面 → QRコードから印刷できます</p>
-    </div>
-  </div>
-)}
-            {manageTab === 'settings' && (
-  <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
-    <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
-      <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>基本設定</p>
-      <div style={{ marginBottom: '10px' }}>
-        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 4px' }}>店舗名</p>
-        <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '7px 10px', color: N.muted, fontSize: '11px' }}>麺屋 雅</div>
-      </div>
-      <div>
-        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 4px' }}>総席数</p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '7px 10px', color: N.accent, fontSize: '14px', fontWeight: 800 }}>20</div>
-          <span style={{ color: N.muted, fontSize: '10px' }}>席</span>
-        </div>
-      </div>
-    </div>
-
-    <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
-      <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>お支払い設定</p>
-      <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 6px' }}>お支払いスタイル</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <div style={{ background: '#1c0a00', border: '1px solid #f97316', borderRadius: '8px', padding: '8px 10px' }}>
-          <p style={{ color: '#f97316', fontSize: '10px', fontWeight: 700, margin: 0 }}>⏳ スタッフがお伺い ✓</p>
-        </div>
-        <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '8px', padding: '8px 10px' }}>
-          <p style={{ color: N.muted, fontSize: '10px', margin: 0 }}>🏧 キャッシャーへご案内</p>
-        </div>
-      </div>
-    </div>
-
-    <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
-      <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>待ち行列設定</p>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: 0 }}>待ち行列機能</p>
-        <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: '#f97316', position: 'relative' }}>
-          <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', left: '18px' }} />
-        </div>
-      </div>
-      <div style={{ marginBottom: '10px' }}>
-        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 4px' }}>1組あたりの待ち時間目安</p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '5px 10px', color: N.accent, fontSize: '13px', fontWeight: 800 }}>15</div>
-          <span style={{ color: N.muted, fontSize: '10px' }}>分 / 組</span>
-        </div>
-      </div>
-      <div>
-        <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 4px' }}>最大受付組数</p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ background: '#0f172a', border: `1px solid ${N.bdr}`, borderRadius: '6px', padding: '5px 10px', color: N.accent, fontSize: '13px', fontWeight: 800 }}>10</div>
-          <span style={{ color: N.muted, fontSize: '10px' }}>組まで</span>
-        </div>
-      </div>
-    </div>
-
-    <div style={{ background: N.surf, border: `1px solid ${N.bdr}`, borderRadius: '10px', padding: '14px' }}>
-      <p style={{ color: N.muted, fontSize: '9px', fontWeight: 700, margin: '0 0 10px', letterSpacing: '0.05em' }}>注文設定</p>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-        <div>
-          <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 2px' }}>追加注文</p>
-          <p style={{ color: N.muted, fontSize: '9px', margin: 0 }}>最初の注文後に追加注文を許可するか</p>
-        </div>
-        <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: '#f97316', position: 'relative' }}>
-          <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', left: '18px' }} />
-        </div>
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <p style={{ color: N.txt, fontSize: '11px', fontWeight: 700, margin: '0 0 2px' }}>時間制限</p>
-          <p style={{ color: N.muted, fontSize: '9px', margin: 0 }}>席の利用時間に制限を設ける</p>
-        </div>
-        <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: '#334155', position: 'relative' }}>
-          <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', left: '2px' }} />
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-</>
         )}
       </div>
     );

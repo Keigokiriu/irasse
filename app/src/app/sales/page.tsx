@@ -73,6 +73,34 @@ export default function SalesPage() {
     }, 0);
   };
 
+  const exportCSV = () => {
+    const rows = [
+      ['日付', '時間', 'テーブル番号', 'セッションID', '注文内容', '金額', 'ステータス'],
+    ];
+    doneOrders.forEach((order) => {
+      const date = order.createdAt ? order.createdAt.toLocaleDateString('ja-JP') : '';
+      const time = order.createdAt ? order.createdAt.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '';
+      rows.push([
+        date,
+        time,
+        String(order.tableNumber),
+        order.sessionId || '',
+        order.items.join(' / '),
+        String(calcOrderTotal(order.items)),
+        '完了',
+      ]);
+    });
+    const csv = rows.map((r) => r.map((v) => `"${v}"`).join(',')).join('\n');
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `irasse_sales_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -86,7 +114,6 @@ export default function SalesPage() {
   const closedSessions = sessions.filter((s) => s.status === 'closed');
   const todaySessions = closedSessions.filter((s) => s.startedAt && s.startedAt >= today);
 
-  // セッションごとの注文をグループ化
   const getSessionOrders = (sessionId: string) =>
     orders.filter((o) => o.sessionId === sessionId);
 
@@ -106,7 +133,6 @@ export default function SalesPage() {
     return Object.entries(itemMap).map(([name, qty]) => `${name} x${qty}`);
   };
 
-  // メニュー別集計
   const menuStats: { [name: string]: { qty: number; total: number } } = {};
   doneOrders.forEach((order) => {
     order.items.forEach((item) => {
@@ -139,12 +165,18 @@ export default function SalesPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', fontFamily: "'Noto Sans JP', sans-serif" }}>
       {/* ヘッダー */}
-      <div style={{ backgroundColor: '#1e293b', borderBottom: '1px solid #334155', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <button onClick={() => router.push('/dashboard')}
-          style={{ background: 'transparent', border: 'none', color: '#f97316', fontSize: '14px', cursor: 'pointer', fontWeight: 700 }}>
-          ← ダッシュボード
+      <div style={{ backgroundColor: '#1e293b', borderBottom: '1px solid #334155', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button onClick={() => router.push('/dashboard')}
+            style={{ background: 'transparent', border: 'none', color: '#f97316', fontSize: '14px', cursor: 'pointer', fontWeight: 700 }}>
+            ← ダッシュボード
+          </button>
+          <h1 style={{ color: '#f1f5f9', fontSize: '18px', fontWeight: 800, margin: 0 }}>📊 売上管理</h1>
+        </div>
+        <button onClick={exportCSV}
+          style={{ background: '#1e3a5f', border: '1px solid #3b82f6', color: '#93c5fd', fontSize: '13px', fontWeight: 700, padding: '8px 16px', borderRadius: '10px', cursor: 'pointer', fontFamily: 'inherit' }}>
+          📥 CSVエクスポート
         </button>
-        <h1 style={{ color: '#f1f5f9', fontSize: '18px', fontWeight: 800, margin: 0 }}>📊 売上管理</h1>
       </div>
 
       {/* タブ */}
@@ -185,7 +217,6 @@ export default function SalesPage() {
               </div>
             </div>
 
-            {/* アクティブセッション */}
             {sessions.filter((s) => s.status === 'active').length > 0 && (
               <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
                 <p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700, margin: '0 0 12px' }}>現在着席中</p>
@@ -217,7 +248,7 @@ export default function SalesPage() {
               <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '32px', textAlign: 'center' }}>
                 <p style={{ color: '#64748b', margin: 0 }}>まだセッションの記録がありません</p>
               </div>
-            ) : closedSessions.map((session, i) => {
+            ) : closedSessions.map((session) => {
               const sessionTotal = getSessionTotal(session.id);
               const sessionItems = getSessionItems(session.id);
               return (
@@ -243,7 +274,7 @@ export default function SalesPage() {
                   {getSessionOrders(session.id).length > 1 && (
                     <div style={{ borderTop: '1px solid #334155', paddingTop: '10px' }}>
                       <p style={{ color: '#64748b', fontSize: '11px', margin: '0 0 6px' }}>注文履歴</p>
-                      {getSessionOrders(session.id).map((order, j) => (
+                      {getSessionOrders(session.id).map((order) => (
                         <div key={order.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
                           <span style={{ color: '#94a3b8', fontSize: '11px' }}>
                             {formatTime(order.createdAt)} {order.items.join('・')}

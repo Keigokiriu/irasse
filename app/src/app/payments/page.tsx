@@ -16,10 +16,45 @@ type Payment = {
   createdAt: { seconds: number } | null;
 };
 
+type Lang = 'ja' | 'en';
+
+const TR = {
+  ja: {
+    back: '← ダッシュボード',
+    title: '💳 お会計管理',
+    pendingBadge: (n: number) => `${n}件 未対応`,
+    pendingTitle: '未対応',
+    doneTitle: '対応済み',
+    loading: '読み込み中...',
+    empty: '未対応のお会計はありません ✅',
+    table: 'テーブル',
+    card: '💳 カード',
+    cash: '💴 現金',
+    markDone: '対応済み ✓',
+    done: '✓ 対応済み',
+  },
+  en: {
+    back: '← Dashboard',
+    title: '💳 Payment Management',
+    pendingBadge: (n: number) => `${n} pending`,
+    pendingTitle: 'Pending',
+    doneTitle: 'Resolved',
+    loading: 'Loading...',
+    empty: 'No pending payments ✅',
+    table: 'Table',
+    card: '💳 Card',
+    cash: '💴 Cash',
+    markDone: 'Resolve ✓',
+    done: '✓ Resolved',
+  },
+};
+
 export default function PaymentsPage() {
   const router = useRouter();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lang, setLang] = useState<Lang>('ja');
+  const t = TR[lang];
 
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (user) => {
@@ -47,34 +82,46 @@ export default function PaymentsPage() {
 
   const formatTime = (payment: Payment) => {
     if (!payment.createdAt) return '';
-    const date = new Date(payment.createdAt.seconds * 1000);
-    return date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+    return new Date(payment.createdAt.seconds * 1000).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0f172a', fontFamily: "'Noto Sans JP', sans-serif" }}>
       <div style={{ backgroundColor: '#1e293b', borderBottom: '1px solid #334155', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={() => router.push('/dashboard')} style={{ background: 'transparent', border: 'none', color: '#f97316', fontSize: '14px', cursor: 'pointer', fontWeight: 700 }}>← ダッシュボード</button>
-          <h1 style={{ color: '#f1f5f9', fontSize: '18px', fontWeight: 800, margin: 0 }}>💳 お会計管理</h1>
+          <button onClick={() => router.push('/dashboard')}
+            style={{ background: 'transparent', border: 'none', color: '#f97316', fontSize: '14px', cursor: 'pointer', fontWeight: 700 }}>
+            {t.back}
+          </button>
+          <h1 style={{ color: '#f1f5f9', fontSize: '18px', fontWeight: 800, margin: 0 }}>{t.title}</h1>
         </div>
-        {pendingPayments.length > 0 && (
-          <div style={{ background: '#7f1d1d', border: '1px solid #ef4444', borderRadius: '20px', padding: '4px 12px' }}>
-            <span style={{ color: '#fca5a5', fontSize: '13px', fontWeight: 700 }}>{pendingPayments.length}件 未対応</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', background: '#0f172a', borderRadius: '8px', padding: '3px', gap: '2px' }}>
+            {(['ja', 'en'] as Lang[]).map((l) => (
+              <button key={l} onClick={() => setLang(l)}
+                style={{ padding: '3px 8px', fontSize: '11px', fontWeight: lang === l ? 700 : 400, background: lang === l ? '#334155' : 'transparent', color: lang === l ? '#f1f5f9' : '#64748b', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+                {l === 'ja' ? '🇯🇵' : '🇺🇸'}
+              </button>
+            ))}
           </div>
-        )}
+          {pendingPayments.length > 0 && (
+            <div style={{ background: '#7f1d1d', border: '1px solid #ef4444', borderRadius: '20px', padding: '4px 12px' }}>
+              <span style={{ color: '#fca5a5', fontSize: '13px', fontWeight: 700 }}>{t.pendingBadge(pendingPayments.length)}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
         <h2 style={{ color: '#f1f5f9', fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>
-          未対応 {pendingPayments.length > 0 && <span style={{ color: '#ef4444' }}>({pendingPayments.length})</span>}
+          {t.pendingTitle} {pendingPayments.length > 0 && <span style={{ color: '#ef4444' }}>({pendingPayments.length})</span>}
         </h2>
 
         {loading ? (
-          <div style={{ color: '#64748b', textAlign: 'center', padding: '40px' }}>読み込み中...</div>
+          <div style={{ color: '#64748b', textAlign: 'center', padding: '40px' }}>{t.loading}</div>
         ) : pendingPayments.length === 0 ? (
           <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '32px', textAlign: 'center', marginBottom: '24px' }}>
-            <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>未対応のお会計はありません ✅</p>
+            <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>{t.empty}</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
@@ -82,9 +129,9 @@ export default function PaymentsPage() {
               <div key={payment.id} style={{ background: '#1e293b', border: '1px solid #ef4444', borderRadius: '14px', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                    <span style={{ background: '#f97316', color: '#fff', borderRadius: '8px', padding: '2px 10px', fontSize: '12px', fontWeight: 700 }}>テーブル {payment.tableNumber}</span>
+                    <span style={{ background: '#f97316', color: '#fff', borderRadius: '8px', padding: '2px 10px', fontSize: '12px', fontWeight: 700 }}>{t.table} {payment.tableNumber}</span>
                     <span style={{ background: payment.payMethod === 'card' ? '#1e3a5f' : '#1a3a1a', color: payment.payMethod === 'card' ? '#60a5fa' : '#4ade80', borderRadius: '8px', padding: '2px 10px', fontSize: '12px', fontWeight: 700 }}>
-                      {payment.payMethod === 'card' ? '💳 カード' : '💴 現金'}
+                      {payment.payMethod === 'card' ? t.card : t.cash}
                     </span>
                     <span style={{ color: '#94a3b8', fontSize: '12px' }}>{formatTime(payment)}</span>
                   </div>
@@ -93,7 +140,7 @@ export default function PaymentsPage() {
                 </div>
                 <button onClick={() => markDone(payment.id)}
                   style={{ background: '#f97316', border: 'none', color: '#fff', borderRadius: '10px', padding: '10px 18px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                  対応済み ✓
+                  {t.markDone}
                 </button>
               </div>
             ))}
@@ -102,14 +149,14 @@ export default function PaymentsPage() {
 
         {donePayments.length > 0 && (
           <>
-            <h2 style={{ color: '#64748b', fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>対応済み ({donePayments.length})</h2>
+            <h2 style={{ color: '#64748b', fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>{t.doneTitle} ({donePayments.length})</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {donePayments.map((payment) => (
                 <div key={payment.id} style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px', opacity: 0.6 }}>
-                  <span style={{ background: '#334155', color: '#94a3b8', borderRadius: '8px', padding: '2px 10px', fontSize: '12px', fontWeight: 700 }}>テーブル {payment.tableNumber}</span>
+                  <span style={{ background: '#334155', color: '#94a3b8', borderRadius: '8px', padding: '2px 10px', fontSize: '12px', fontWeight: 700 }}>{t.table} {payment.tableNumber}</span>
                   <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0, flex: 1 }}>¥{payment.total.toLocaleString()} · {payment.items.join('、')}</p>
                   <span style={{ color: '#94a3b8', fontSize: '12px' }}>{formatTime(payment)}</span>
-                  <span style={{ color: '#4ade80', fontSize: '12px', fontWeight: 700 }}>✓ 対応済み</span>
+                  <span style={{ color: '#4ade80', fontSize: '12px', fontWeight: 700 }}>{t.done}</span>
                 </div>
               ))}
             </div>
