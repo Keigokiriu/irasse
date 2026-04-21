@@ -180,6 +180,7 @@ function OrderForm() {
   const [paymentStyle, setPaymentStyle] = useState<'staff' | 'cashier'>('staff');
 
   const [storeName, setStoreName] = useState('');
+  const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, 'store_status', 'main'), (snap) => {
@@ -187,6 +188,7 @@ function OrderForm() {
         const data = snap.data();
         if (data.paymentStyle) setPaymentStyle(data.paymentStyle);
         if (data.storeName) setStoreName(data.storeName);
+        if (data.isOpen !== undefined) setIsOpen(data.isOpen);
       }
     });
     return () => unsubscribe();
@@ -319,6 +321,18 @@ function OrderForm() {
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: "'Noto Sans JP', sans-serif", display: 'flex', flexDirection: 'column' }}>
+
+{!isOpen && (
+  <div style={{ position: 'fixed', inset: 0, background: '#09090b', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 999, padding: '24px' }}>
+    <div style={{ fontSize: '56px', marginBottom: '16px' }}>🔒</div>
+    <div style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff', marginBottom: '8px', textAlign: 'center' }}>
+      {lang === 'ja' ? '現在営業時間外です' : lang === 'en' ? 'Currently Closed' : lang === 'ko' ? '현재 영업 시간 외입니다' : '当前非营业时间'}
+    </div>
+    <div style={{ fontSize: '14px', color: '#888891', textAlign: 'center' }}>
+      {lang === 'ja' ? '営業時間内にまたお越しください' : lang === 'en' ? 'Please come back during business hours' : lang === 'ko' ? '영업 시간에 다시 방문해 주세요' : '请在营业时间内再次光临'}
+    </div>
+  </div>
+)}
 
       {/* ヘッダー */}
       <div style={{ background: C.surf, borderBottom: `1px solid ${C.bdr}`, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>

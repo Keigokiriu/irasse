@@ -16,12 +16,14 @@ type StoreSettings = {
   timeLimit: boolean;
   timeLimitMinutes: number;
   additionalOrderEnabled: boolean;
+  isOpen: boolean;
 };
 
 const DEFAULT_SETTINGS: StoreSettings = {
   storeName: '', totalSeats: 20, paymentStyle: 'staff',
   waitlistEnabled: true, estimatedWaitPerGroup: 15, maxWaitGroups: 10,
   timeLimit: false, timeLimitMinutes: 90, additionalOrderEnabled: true,
+  isOpen: false,
 };
 
 type Lang = 'ja' | 'en';
@@ -33,6 +35,9 @@ const TR = {
     save: '保存する',
     saved: '✅ 保存しました',
     loading: '読み込み中...',
+    operationSection: '営業設定',
+isOpen: '営業中',
+isOpenSub: 'ONにすると客がQRから注文・待ち行列登録できます',
     basicSection: '基本設定',
     storeName: '店舗名',
     storeNameSub: '客側の画面に表示される店舗名です',
@@ -72,6 +77,9 @@ const TR = {
     save: 'Save',
     saved: '✅ Saved',
     loading: 'Loading...',
+    operationSection: 'Operation',
+isOpen: 'Open for Business',
+isOpenSub: 'When ON, guests can order and join the waitlist via QR',
     basicSection: 'Basic Settings',
     storeName: 'Store Name',
     storeNameSub: 'This name appears on the customer-facing screen',
@@ -195,6 +203,18 @@ export default function SettingsPage() {
       </div>
 
       <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+        {/* 営業設定 */}
+<div style={{ background: settings.isOpen ? '#052e16' : '#1e293b', border: `1px solid ${settings.isOpen ? '#22c55e' : '#334155'}`, borderRadius: '14px', padding: '20px', marginBottom: '16px' }}>
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div>
+      <p style={{ color: settings.isOpen ? '#22c55e' : '#f1f5f9', fontSize: '16px', fontWeight: 800, margin: '0 0 4px' }}>
+        {settings.isOpen ? (lang === 'ja' ? '🟢 営業中' : '🟢 Open') : (lang === 'ja' ? '⚫️ 閉店中' : '⚫️ Closed')}
+      </p>
+      <p style={{ color: '#64748b', fontSize: '12px', margin: 0 }}>{t.isOpenSub}</p>
+    </div>
+    <Toggle value={settings.isOpen} onChange={(v) => update('isOpen', v)} />
+  </div>
+</div>
         <Section title={t.basicSection}>
           <Label>{t.storeName}</Label>
           <SubLabel>{t.storeNameSub}</SubLabel>
