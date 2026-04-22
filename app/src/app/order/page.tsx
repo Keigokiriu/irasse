@@ -289,8 +289,15 @@ function OrderForm() {
     if (orderedItems.length === 0) return;
     setLoading(true);
     try {
-        await addDoc(collection(db, 'payments'), {
+        const tablesSnap = await getDocs(
+            query(collection(db, 'tables'), where('number', '==', tableNumber))
+          );
+          const sessionId = tablesSnap.docs[0]?.data()?.currentSessionId || null;
+          
+          await addDoc(collection(db, 'payments'), {
             tableNumber,
+            sessionId,
+            currency: 'JPY',
             items: orderedItems.map((c) => ({ name: c.name, quantity: c.qty, price: c.price })),
             total: orderedTotal,
             payMethod,
