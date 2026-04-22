@@ -423,27 +423,34 @@ export default function PaymentsPage() {
               </div>
 
               <div style={{ marginBottom: '14px' }}>
-                {receiptItems.length === 0 ? (
-                  <p style={{ fontSize: '13px', color: '#666', margin: 0 }}>{t.receiptNoItems}</p>
-                ) : (
-                  receiptItems.map((item, index) => (
-                    <div
-                      key={`${item.name}-${index}`}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        marginBottom: '6px',
-                        gap: '10px',
-                      }}
-                    >
-                      <span style={{ fontSize: '13px', flex: 1, wordBreak: 'break-word' }}>{item.name}</span>
-                      <span style={{ fontSize: '13px', color: '#666', whiteSpace: 'nowrap' }}>
-                        ×{item.quantity}
-                      </span>
-                    </div>
-                  ))
-                )}
+              {receiptItems.length === 0 ? (
+  <p style={{ fontSize: '13px', color: '#666', margin: 0 }}>{t.receiptNoItems}</p>
+) : (
+  receiptItems.map((item, index) => {
+    const subtotal =
+      item.price !== undefined && Number.isFinite(item.price)
+        ? item.price * item.quantity
+        : null;
+
+    return (
+      <div key={`${item.name}-${index}`} style={{ marginBottom: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+          <span style={{ fontSize: '13px', flex: 1, wordBreak: 'break-word' }}>
+            {item.name}
+          </span>
+          {subtotal !== null && (
+            <span style={{ fontSize: '13px', color: '#000', fontWeight: 700, whiteSpace: 'nowrap' }}>
+              {formatCurrency(subtotal, lang)}
+            </span>
+          )}
+        </div>
+        <div style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>
+          {item.price !== undefined ? formatCurrency(item.price, lang) : '-'} × {item.quantity}
+        </div>
+      </div>
+    );
+  })
+)}
               </div>
 
               <div
