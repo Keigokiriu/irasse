@@ -222,15 +222,7 @@ function OrderForm() {
         status: 'pending', createdAt: serverTimestamp(),
       });
 
-      if (sessionId) {
-        const sessionDoc = await getDoc(doc(db, 'sessions', sessionId));
-        if (sessionDoc.exists()) {
-          const currentTotal = sessionDoc.data().totalAmount || 0;
-          await updateDoc(doc(db, 'sessions', sessionId), {
-            totalAmount: currentTotal + total,
-          });
-        }
-      }
+    
 
       // AI退席予測を自動実行
       if (tableId && sessionId) {
