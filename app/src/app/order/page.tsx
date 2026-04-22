@@ -297,10 +297,14 @@ function OrderForm() {
     if (orderedItems.length === 0) return;
     setLoading(true);
     try {
-      await addDoc(collection(db, 'payments'), {
-        tableNumber, items: orderedItems.map((c) => `${c.name} x${c.qty}`),
-        total: orderedTotal, payMethod, status: 'pending', createdAt: serverTimestamp(),
-      });
+        await addDoc(collection(db, 'payments'), {
+            tableNumber,
+            items: orderedItems.map((c) => ({ name: c.name, quantity: c.qty, price: c.price })),
+            total: orderedTotal,
+            payMethod,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+          });
       setPayDone(true);
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };
