@@ -56,9 +56,11 @@ const TR = {
     receiptTable: 'テーブル',
     receiptTime: '日時',
     receiptPayMethod: 'お支払い',
+    receiptSubtotal: '小計',
     receiptTotal: '合計',
     receiptNumber: '伝票番号',
     receiptNoItems: '明細情報がありません',
+    receiptStoreInfo: '店舗情報',
     receiptThanks: 'ありがとうございました',
     updateError: '更新に失敗しました。通信状況をご確認ください。',
     loadError: 'お会計データの取得に失敗しました。',
@@ -85,9 +87,11 @@ const TR = {
     receiptTable: 'Table',
     receiptTime: 'Date & Time',
     receiptPayMethod: 'Payment',
+    receiptSubtotal: 'Subtotal',
     receiptTotal: 'Total',
     receiptNumber: 'Receipt No.',
     receiptNoItems: 'No item details available',
+    receiptStoreInfo: 'Store Info',
     receiptThanks: 'Thank you for visiting!',
     updateError: 'Failed to update. Please check your connection.',
     loadError: 'Failed to load payment data.',
@@ -149,7 +153,9 @@ function getReceiptNumber(id: string) {
   return id.slice(0, 8).toUpperCase();
 }
 
-function parsePaymentItem(input: PaymentItemInput): { name: string; quantity: number; price?: number } | null {
+function parsePaymentItem(
+  input: PaymentItemInput
+): { name: string; quantity: number; price?: number } | null {
   if (typeof input === 'string') {
     const trimmed = input.trim();
     if (!trimmed) return null;
@@ -202,7 +208,12 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [lang, setLang] = useState<Lang>('ja');
   const [receiptPayment, setReceiptPayment] = useState<Payment | null>(null);
+
   const [storeName, setStoreName] = useState('Irasse');
+  const [storeAddress, setStoreAddress] = useState('');
+  const [storePhone, setStorePhone] = useState('');
+  const [storeWebsite, setStoreWebsite] = useState('');
+
   const [isUpdatingId, setIsUpdatingId] = useState<string | null>(null);
   const [pageError, setPageError] = useState('');
   const [actionError, setActionError] = useState('');
@@ -228,13 +239,39 @@ export default function PaymentsPage() {
       (snap) => {
         if (snap.exists()) {
           const data = snap.data();
+
           if (typeof data.storeName === 'string' && data.storeName.trim()) {
             setStoreName(data.storeName.trim());
           }
+
+          const address =
+            typeof data.storeAddress === 'string' && data.storeAddress.trim()
+              ? data.storeAddress.trim()
+              : typeof data.address === 'string' && data.address.trim()
+                ? data.address.trim()
+                : '';
+
+          const phone =
+            typeof data.storePhone === 'string' && data.storePhone.trim()
+              ? data.storePhone.trim()
+              : typeof data.phone === 'string' && data.phone.trim()
+                ? data.phone.trim()
+                : '';
+
+          const website =
+            typeof data.storeWebsite === 'string' && data.storeWebsite.trim()
+              ? data.storeWebsite.trim()
+              : typeof data.website === 'string' && data.website.trim()
+                ? data.website.trim()
+                : '';
+
+          setStoreAddress(address);
+          setStorePhone(phone);
+          setStoreWebsite(website);
         }
       },
       () => {
-        // 店名取得失敗はページ全体を止めない
+        // 店舗情報取得失敗はページ全体を止めない
       }
     );
 
@@ -304,38 +341,64 @@ export default function PaymentsPage() {
     }>;
   }, [receiptPayment]);
 
+  const receiptSubtotal = useMemo(() => {
+    if (receiptItems.length === 0) return null;
+
+    const allItemsHavePrice = receiptItems.every(
+      (item) => typeof item.price === 'number' && Number.isFinite(item.price)
+    );
+
+    if (!allItemsHavePrice) return null;
+
+    return receiptItems.reduce((sum, item) => sum + (item.price ?? 0) * item.quantity, 0);
+  }, [receiptItems]);
+
+  const hasStoreInfo = Boolean(storeAddress || storePhone || storeWebsite);
+
   return (
     <div
       className="min-h-screen"
       style={{ backgroundColor: '#0f172a', fontFamily: "'Noto Sans JP', sans-serif" }}
     >
       <style>{`
-        @media print {
-          body * {
-            visibility: hidden !important;
-          }
+  @media print {
+    html, body {
+      background: white !important;
+    }
 
-          #receipt-print,
-          #receipt-print * {
-            visibility: visible !important;
-          }
+    body * {
+      visibility: hidden !important;
+    }
 
-          #receipt-print {
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            min-height: 100vh;
-            padding: 24px;
-            background: white !important;
-            color: black !important;
-            box-sizing: border-box;
-          }
+    #receipt-print,
+    #receipt-print * {
+      visibility: visible !important;
+    }
 
-          .no-print {
-            display: none !important;
-          }
-        }
-      `}</style>
+    #receipt-print {
+  position: fixed !important;
+  top: 8mm;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 680px;
+  max-width: calc(100% - 20mm);
+  padding: 0 10mm;
+  background: white !important;
+  color: black !important;
+  box-sizing: border-box;
+  box-shadow: none !important;
+}
+
+    .no-print {
+      display: none !important;
+    }
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+`}</style>
 
       {receiptPayment && (
         <div
@@ -374,6 +437,26 @@ export default function PaymentsPage() {
                 >
                   {t.receiptTitle}
                 </h2>
+
+                {hasStoreInfo && (
+                  <div style={{ marginTop: '10px' }}>
+                    {storeAddress && (
+                      <p style={{ fontSize: '11px', color: '#666', margin: '0 0 2px', lineHeight: 1.5 }}>
+                        {storeAddress}
+                      </p>
+                    )}
+                    {storePhone && (
+                      <p style={{ fontSize: '11px', color: '#666', margin: '0 0 2px', lineHeight: 1.5 }}>
+                        {storePhone}
+                      </p>
+                    )}
+                    {storeWebsite && (
+                      <p style={{ fontSize: '11px', color: '#666', margin: 0, lineHeight: 1.5 }}>
+                        {storeWebsite}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div
@@ -423,34 +506,88 @@ export default function PaymentsPage() {
               </div>
 
               <div style={{ marginBottom: '14px' }}>
-              {receiptItems.length === 0 ? (
-  <p style={{ fontSize: '13px', color: '#666', margin: 0 }}>{t.receiptNoItems}</p>
-) : (
-  receiptItems.map((item, index) => {
-    const subtotal =
-      item.price !== undefined && Number.isFinite(item.price)
-        ? item.price * item.quantity
-        : null;
+                {receiptItems.length === 0 ? (
+                  <p style={{ fontSize: '13px', color: '#666', margin: 0 }}>{t.receiptNoItems}</p>
+                ) : (
+                  receiptItems.map((item, index) => {
+                    const subtotal =
+                      item.price !== undefined && Number.isFinite(item.price)
+                        ? item.price * item.quantity
+                        : null;
 
-    return (
-      <div key={`${item.name}-${index}`} style={{ marginBottom: '8px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
-          <span style={{ fontSize: '13px', flex: 1, wordBreak: 'break-word' }}>
-            {item.name}
-          </span>
-          {subtotal !== null && (
-            <span style={{ fontSize: '13px', color: '#000', fontWeight: 700, whiteSpace: 'nowrap' }}>
-              {formatCurrency(subtotal, lang)}
-            </span>
-          )}
-        </div>
-        <div style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>
-          {item.price !== undefined ? formatCurrency(item.price, lang) : '-'} × {item.quantity}
-        </div>
-      </div>
-    );
-  })
-)}
+                    return (
+                      <div key={`${item.name}-${index}`} style={{ marginBottom: '8px' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            gap: '10px',
+                          }}
+                        >
+                          <span style={{ fontSize: '13px', flex: 1, wordBreak: 'break-word' }}>
+                            {item.name}
+                          </span>
+
+                          {subtotal !== null && (
+                            <span
+                              style={{
+                                fontSize: '13px',
+                                color: '#000',
+                                fontWeight: 700,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {formatCurrency(subtotal, lang)}
+                            </span>
+                          )}
+                        </div>
+
+                        <div style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>
+                          {item.price !== undefined ? formatCurrency(item.price, lang) : '-'} × {item.quantity}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              <div style={{ borderTop: '1px solid #d4d4d8', paddingTop: '10px', marginBottom: '10px' }}>
+                {receiptSubtotal !== null && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '8px',
+                      gap: '12px',
+                    }}
+                  >
+                    <span style={{ fontSize: '13px', fontWeight: 700 }}>{t.receiptSubtotal}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, textAlign: 'right' }}>
+                      {formatCurrency(receiptSubtotal, lang)}
+                    </span>
+                  </div>
+                )}
+
+                {hasStoreInfo && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      gap: '12px',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    <span style={{ fontSize: '13px', fontWeight: 700 }}>{t.receiptStoreInfo}</span>
+                    <div style={{ textAlign: 'right', fontSize: '11px', color: '#666', lineHeight: 1.5 }}>
+                      {storeAddress && <div>{storeAddress}</div>}
+                      {storePhone && <div>{storePhone}</div>}
+                      {storeWebsite && <div>{storeWebsite}</div>}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div
@@ -680,7 +817,15 @@ export default function PaymentsPage() {
                   }}
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        marginBottom: '8px',
+                        flexWrap: 'wrap',
+                      }}
+                    >
                       <span
                         style={{
                           background: '#f97316',
@@ -851,7 +996,14 @@ export default function PaymentsPage() {
                       {t.receipt}
                     </button>
 
-                    <span style={{ color: '#4ade80', fontSize: '12px', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                    <span
+                      style={{
+                        color: '#4ade80',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       {t.done}
                     </span>
                   </div>
