@@ -25,6 +25,7 @@ const TR = {
     seatReady: 'お席の準備ができました！',
     seatReadySub: 'スタッフにお声がけください',
     enterAndOrder: '入店して注文する →',
+    registerFailed: '登録に失敗しました。もう一度お試しください。',
   },
   en: {
     title: 'Irasse', congestion: 'Current Availability',
@@ -45,6 +46,7 @@ const TR = {
     seatReady: 'Your table is ready!',
     seatReadySub: 'Please speak to a staff member',
     enterAndOrder: 'Enter & Order →',
+    registerFailed: 'Registration failed. Please try again.',
   },
   ko: {
     title: 'Irasse', congestion: '현재 혼잡 상황',
@@ -65,6 +67,7 @@ const TR = {
     seatReady: '자리가 준비되었습니다!',
     seatReadySub: '직원에게 말씀해 주세요',
     enterAndOrder: '입장하여 주문하기 →',
+    registerFailed: '등록에 실패했습니다. 다시 시도해 주세요.',
   },
   zh: {
     title: 'Irasse', congestion: '当前拥挤状况',
@@ -85,6 +88,7 @@ const TR = {
     seatReady: '您的座位已准备好！',
     seatReadySub: '请告知工作人员',
     enterAndOrder: '入座点餐 →',
+    registerFailed: '登记失败，请重试。',
   },
 };
 
@@ -111,6 +115,7 @@ function WaitingForm() {
   const [name, setName] = useState('');
   const [partySize, setPartySize] = useState(2);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [storeName, setStoreName] = useState('');
 
   useEffect(() => {
@@ -135,14 +140,21 @@ function WaitingForm() {
 
   const handleRegister = async () => {
     if (!name.trim()) return;
+    setErrorMessage('');
     setLoading(true);
     try {
       const docRef = await addDoc(collection(db, 'waitlist'), {
         name, partySize, status: 'waiting', createdAt: serverTimestamp(),
       });
+      setErrorMessage('');
       setMyEntryId(docRef.id);
       setStep('waiting');
-    } catch (e) { console.error(e); } finally { setLoading(false); }
+    } catch (e) {
+      console.error(e);
+      setErrorMessage(t.registerFailed);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const waitingList = waitlist.filter((e) => e.status === 'waiting');
@@ -254,7 +266,12 @@ function WaitingForm() {
             ))}
           </div>
         </div>
-        <button onClick={handleRegister} disabled={!name.trim() || loading}
+        {errorMessage && (
+  <div style={{ background: '#7f1d1d', border: '1px solid #ef4444', color: '#fecaca', padding: '12px 14px', borderRadius: '12px', fontSize: '13px', marginBottom: '12px' }}>
+    {errorMessage}
+  </div>
+)}
+<button onClick={handleRegister} disabled={!name.trim() || loading}
           style={{ width: '100%', background: name.trim() ? C.amber : C.faint, border: 'none', color: name.trim() ? C.bg : C.muted, fontSize: '15px', fontWeight: 800, padding: '14px', borderRadius: '12px', cursor: name.trim() ? 'pointer' : 'default', fontFamily: "'Noto Sans JP', sans-serif" }}>
           {loading ? t.registering : t.register}
         </button>
