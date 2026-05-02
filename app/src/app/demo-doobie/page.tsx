@@ -13,6 +13,7 @@ const C = {
   goldD: '#1a1400',
   goldM: '#a07830',
   faint: '#181818',
+  green: '#8aa67c',
 };
 
 const CATEGORIES = [
@@ -37,120 +38,223 @@ export default function DoobieDemoPage() {
 
   const totalQty = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
   const totalPrice = doobieMenu.reduce(
-    (sum, item) => sum + (cart[item.id] || 0) * item.price, 0
+    (sum, item) => sum + (cart[item.id] || 0) * item.price,
+    0
   );
 
   const add = (id: string) => setCart((c) => ({ ...c, [id]: (c[id] || 0) + 1 }));
   const sub = (id: string) => setCart((c) => ({ ...c, [id]: Math.max((c[id] || 0) - 1, 0) }));
 
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: "'Noto Sans JP', sans-serif", display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: "'Noto Sans JP', sans-serif", paddingBottom: '88px' }}>
 
-      {/* ヘッダー */}
-      <div style={{ background: C.surf, borderBottom: `1px solid ${C.bdr}`, padding: '16px 20px', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-          <div>
-            <div style={{ fontSize: '22px', fontWeight: 800, color: C.gold, letterSpacing: '0.08em' }}>
-              {doobieStore.name}
-            </div>
-            <div style={{ fontSize: '12px', color: '#c9a84c99', marginTop: '2px', fontStyle: 'italic' }}>
-              {doobieStore.subtitle}
-            </div>
-            <div style={{ fontSize: '11px', color: C.muted, marginTop: '6px' }}>
-              Disco nights, izakaya plates & natural wines
-            </div>
-            <div style={{ fontSize: '10px', color: '#666', marginTop: '4px' }}>
-              📍 {doobieStore.location}
-            </div>
+      {/* HERO */}
+<div
+  style={{
+    position: 'relative',
+    minHeight: '420px',
+    backgroundImage:
+      'linear-gradient(180deg, rgba(8,8,8,0.55) 0%, rgba(8,8,8,0.3) 40%, rgba(8,8,8,0.85) 100%), url(/doobie/sign.jpg)',
+    backgroundSize: 'cover',
+    backgroundPosition: '60% 30%',
+  }}
+>
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 16px' }}>
+          <button
+            aria-label="menu"
+            style={{
+              width: '40px', height: '40px', borderRadius: '50%',
+              border: '1px solid #2a2a2a', background: 'rgba(0,0,0,0.55)',
+              color: C.txt, fontSize: '18px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              backdropFilter: 'blur(6px)',
+            }}
+          >
+            ≡
+          </button>
+          <button
+            aria-label="cart"
+            style={{
+              position: 'relative',
+              width: '40px', height: '40px', borderRadius: '50%',
+              border: `1px solid ${C.goldM}`, background: 'rgba(0,0,0,0.55)',
+              color: C.gold, fontSize: '15px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              backdropFilter: 'blur(6px)',
+            }}
+          >
+            🛒
+            <span
+              style={{
+                position: 'absolute', top: '-4px', right: '-4px',
+                minWidth: '18px', height: '18px', padding: '0 4px',
+                background: C.gold, color: C.bg, borderRadius: '9px',
+                fontSize: '10px', fontWeight: 800,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              {totalQty}
+            </span>
+          </button>
+        </div>
+
+        <div style={{ padding: '180px 20px 28px', maxWidth: '85%' }}>
+  <h1
+    style={{
+      fontSize: '32px', fontWeight: 800, color: C.txt,
+      letterSpacing: '0.02em', margin: 0, lineHeight: 1.1,
+      textShadow: '0 2px 16px rgba(0,0,0,0.85)',
+    }}
+  >
+    DOOBIE DOO BAR
+  </h1>
+          <div style={{ fontSize: '14px', color: C.green, marginTop: '8px', fontWeight: 500 }}>
+            {doobieStore.subtitle}
           </div>
-          {totalQty > 0 && (
-            <div style={{ background: C.goldD, border: `1px solid ${C.goldM}`, borderRadius: '20px', padding: '6px 14px', whiteSpace: 'nowrap' }}>
-              <span style={{ color: C.gold, fontSize: '12px', fontWeight: 700 }}>
-                🛒 {totalQty} items · {formatVND(totalPrice)}
-              </span>
-            </div>
-          )}
+          <div style={{ fontSize: '13px', color: C.txt, marginTop: '14px', lineHeight: 1.55, opacity: 0.92 }}>
+            Late-night izakaya bites, natural wines,<br />and good vibes in Ho Chi Minh City.
+          </div>
+          <div
+            style={{
+              fontSize: '12px', color: C.gold, marginTop: '16px',
+              display: 'flex', gap: '6px', alignItems: 'flex-start',
+            }}
+          >
+            <span style={{ flexShrink: 0 }}>📍</span>
+            <span style={{ lineHeight: 1.45 }}>118 Phạm Viết Chánh, Bình Thạnh,<br />Ho Chi Minh City</span>
+          </div>
         </div>
       </div>
 
-      {/* ヒーローバナー */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1a0a00 0%, #0a0a0a 40%, #1a1200 100%)',
-        borderBottom: `1px solid ${C.bdr}`,
-        padding: '24px 20px',
-        flexShrink: 0,
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        {/* 背景装飾 */}
-        <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: '#c9a84c08', border: '1px solid #c9a84c15' }} />
-        <div style={{ position: 'absolute', bottom: '-30px', left: '10px', width: '80px', height: '80px', borderRadius: '50%', background: '#c9a84c05', border: '1px solid #c9a84c10' }} />
+      {/* INSIDE DOOBIE */}
+      <div style={{ padding: '22px 16px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <span style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.18em', fontWeight: 700 }}>
+            INSIDE DOOBIE
+          </span>
+          <span style={{ fontSize: '11px', color: C.muted, cursor: 'pointer' }}>
+            View gallery →
+          </span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <div
+            style={{
+              aspectRatio: '4 / 3',
+              backgroundImage: 'url(/doobie/interior-1.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              borderRadius: '10px',
+              border: `1px solid ${C.bdr}`,
+            }}
+          />
+          <div
+            style={{
+              aspectRatio: '4 / 3',
+              backgroundImage: 'url(/doobie/interior-2.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              borderRadius: '10px',
+              border: `1px solid ${C.bdr}`,
+            }}
+          />
+        </div>
+      </div>
 
-        <div style={{ position: 'relative' }}>
-          <div style={{ fontSize: '13px', color: C.gold, fontWeight: 700, letterSpacing: '0.15em', marginBottom: '8px' }}>
-            ✦ TONIGHT'S PICKS
-          </div>
-          <div style={{ fontSize: '18px', fontWeight: 800, color: C.txt, lineHeight: 1.3, marginBottom: '8px' }}>
-            Late-night bites &<br />good vibes only.
-          </div>
-          <div style={{ fontSize: '11px', color: C.muted, lineHeight: 1.6 }}>
-          Scan · Order · Enjoy — smoother ordering for every guest.
-          </div>
+      {/* COMFORT FOOD */}
+      <div
+        style={{
+          margin: '20px 16px 0',
+          padding: '28px 22px',
+          borderRadius: '12px',
+          position: 'relative',
+          overflow: 'hidden',
+          minHeight: '180px',
+          backgroundImage:
+            'linear-gradient(90deg, rgba(10,5,0,0.85) 0%, rgba(10,5,0,0.45) 50%, rgba(10,5,0,0.1) 100%), url(/doobie/comfort-food.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          border: `1px solid ${C.bdr}`,
+        }}
+      >
+        <h2
+          style={{
+            fontSize: '24px', fontWeight: 500, color: C.txt,
+            lineHeight: 1.2, margin: 0,
+            fontFamily: "'Times New Roman', Georgia, serif",
+            textShadow: '0 2px 12px rgba(0,0,0,0.5)',
+          }}
+        >
+          Comfort food,<br />served the<br />Doobie way.
+        </h2>
+        <div style={{ fontSize: '12px', color: C.green, marginTop: '14px', lineHeight: 1.45 }}>
+          Izakaya favorites,<br />made for sharing.
         </div>
       </div>
 
       {/* カテゴリタブ */}
-      <div style={{ background: C.surf, borderBottom: `1px solid ${C.bdr}`, display: 'flex', padding: '0 12px', overflowX: 'auto', flexShrink: 0 }}>
-        <button onClick={() => setActiveCategory('recommended')} style={{
-          padding: '10px 16px', fontSize: '12px', fontWeight: 700,
-          color: activeCategory === 'recommended' ? C.gold : C.muted,
-          background: 'transparent', border: 'none',
-          borderBottom: activeCategory === 'recommended' ? `2px solid ${C.gold}` : '2px solid transparent',
-          cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit',
-        }}>
-          ★ Best of Doobie
+      <div style={{ padding: '20px 16px 12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <button
+          onClick={() => setActiveCategory('recommended')}
+          style={{
+            padding: '8px 16px', fontSize: '12px', fontWeight: 600,
+            color: activeCategory === 'recommended' ? C.gold : C.muted,
+            background: 'transparent',
+            border: `1px solid ${activeCategory === 'recommended' ? C.gold : '#2a2a2a'}`,
+            borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
+          }}
+        >
+          Best of Doobie
         </button>
         {CATEGORIES.map((cat) => (
-          <button key={cat} onClick={() => setActiveCategory(cat)} style={{
-            padding: '10px 16px', fontSize: '12px', fontWeight: 700,
-            color: activeCategory === cat ? C.gold : C.muted,
-            background: 'transparent', border: 'none',
-            borderBottom: activeCategory === cat ? `2px solid ${C.gold}` : '2px solid transparent',
-            cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit',
-          }}>
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            style={{
+              padding: '8px 16px', fontSize: '12px', fontWeight: 600,
+              color: activeCategory === cat ? C.gold : C.muted,
+              background: 'transparent',
+              border: `1px solid ${activeCategory === cat ? C.gold : '#2a2a2a'}`,
+              borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
+            }}
+          >
             {cat}
           </button>
         ))}
       </div>
 
-      {/* おすすめセクションのヘッダー */}
+      {/* RECOMMENDED 見出し */}
       {activeCategory === 'recommended' && (
-        <div style={{ padding: '12px 16px 4px', flexShrink: 0 }}>
-          <div style={{ fontSize: '11px', color: C.muted, letterSpacing: '0.1em' }}>
-            RECOMMENDED FOR FIRST-TIME GUESTS
+        <div style={{ padding: '4px 16px 8px' }}>
+          <div style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.12em', fontWeight: 700 }}>
+            ★ RECOMMENDED FOR FIRST-TIME GUESTS
           </div>
         </div>
       )}
 
       {/* メニューリスト */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px', paddingBottom: '88px' }}>
+      <div style={{ padding: '4px 16px 8px' }}>
         {filteredItems.map((item) => (
-          <div key={item.id} style={{
-            background: item.recommended ? '#141200' : C.surf,
-            border: `1px solid ${(cart[item.id] || 0) > 0 ? C.gold : item.recommended ? C.goldM : C.bdr}`,
-            borderRadius: '12px',
-            padding: '12px 14px',
-            marginBottom: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-          }}>
-            {/* 画像枠 */}
-            <div style={{
-              width: '56px', height: '56px', borderRadius: '10px', overflow: 'hidden',
-              flexShrink: 0, background: '#1a1a1a', border: `1px solid ${C.bdr}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
+          <div
+            key={item.id}
+            style={{
+              background: C.surf,
+              border: `1px solid ${(cart[item.id] || 0) > 0 ? C.gold : C.bdr}`,
+              borderRadius: '12px',
+              padding: '12px 14px',
+              marginBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              boxShadow: (cart[item.id] || 0) > 0 ? '0 0 0 1px rgba(201,168,76,0.15)' : 'none',
+            }}
+          >
+            <div
+              style={{
+                width: '52px', height: '52px', borderRadius: '8px', overflow: 'hidden',
+                flexShrink: 0, background: '#1a1a1a', border: `1px solid ${C.bdr}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
               {item.imageUrl ? (
                 <img src={item.imageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
@@ -158,56 +262,117 @@ export default function DoobieDemoPage() {
                   {item.category.includes('Wine') || item.category === 'Sparkling'
                     ? '🍷'
                     : item.category === 'Oden'
-                      ? '🍢'
-                      : item.category === 'Rice / Noodle'
-                        ? '🍜'
-                        : '🍽️'}
+                    ? '🍢'
+                    : item.category === 'Rice / Noodle'
+                    ? '🍜'
+                    : '🍽️'}
                 </span>
               )}
             </div>
-
-            {/* テキスト */}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' }}>
-                <p style={{ color: C.txt, fontWeight: 700, fontSize: '14px', margin: 0, wordBreak: 'break-word' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <p style={{ color: C.txt, fontWeight: 500, fontSize: '13px', margin: 0, lineHeight: 1.35 }}>
                   {item.name}
                 </p>
                 {item.recommended && activeCategory !== 'recommended' && (
-                  <span style={{ background: C.goldD, border: `1px solid ${C.goldM}`, color: C.gold, fontSize: '9px', fontWeight: 700, padding: '1px 6px', borderRadius: '4px' }}>
+                  <span
+                    style={{
+                      background: C.goldD, border: `1px solid ${C.goldM}`,
+                      color: C.gold, fontSize: '9px', fontWeight: 700,
+                      padding: '1px 6px', borderRadius: '4px',
+                    }}
+                  >
                     ★ REC
                   </span>
                 )}
               </div>
-              {item.description && (
-                <p style={{ color: C.muted, fontSize: '11px', margin: '0 0 4px', lineHeight: 1.5 }}>
-                  {item.description}
-                </p>
-              )}
-              <p style={{ color: C.gold, fontWeight: 700, fontSize: '13px', margin: 0 }}>
+              <p style={{ color: C.gold, fontWeight: 600, fontSize: '12px', margin: '4px 0 0' }}>
                 {formatVND(item.price)}
               </p>
             </div>
-
-            {/* カートボタン */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-              <button onClick={() => sub(item.id)} style={{ width: '28px', height: '28px', borderRadius: '50%', background: C.faint, border: `1px solid ${C.bdr}`, color: C.txt, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
-              <span style={{ fontSize: '14px', fontWeight: 700, color: (cart[item.id] || 0) > 0 ? C.gold : C.muted, minWidth: '16px', textAlign: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+              <button
+                onClick={() => sub(item.id)}
+                aria-label="decrement"
+                style={{
+                  width: '26px', height: '26px', borderRadius: '50%',
+                  background: 'transparent', border: `1px solid ${C.goldM}`,
+                  color: C.gold, fontSize: '14px', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                −
+              </button>
+              <span
+                style={{
+                  fontSize: '13px', fontWeight: 700, color: C.txt,
+                  minWidth: '14px', textAlign: 'center',
+                }}
+              >
                 {cart[item.id] || 0}
               </span>
-              <button onClick={() => add(item.id)} style={{ width: '28px', height: '28px', borderRadius: '50%', background: C.gold, border: 'none', color: C.bg, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>+</button>
+              <button
+                onClick={() => add(item.id)}
+                aria-label="increment"
+                style={{
+                  width: '26px', height: '26px', borderRadius: '50%',
+                  background: 'transparent', border: `1px solid ${C.goldM}`,
+                  color: C.gold, fontSize: '14px', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                +
+              </button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* カートボタン */}
-      {totalQty > 0 && (
-        <div style={{ background: C.surf, borderTop: `1px solid ${C.bdr}`, padding: '12px 16px', flexShrink: 0 }}>
-          <button style={{ width: '100%', background: C.gold, border: 'none', color: C.bg, fontSize: '15px', fontWeight: 800, padding: '14px', borderRadius: '12px', cursor: 'pointer' }}>
-            Review Order ({formatVND(totalPrice)})
-          </button>
+      {/* ボトムバー */}
+      <div
+        style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0,
+          background: C.surf, borderTop: `1px solid ${C.bdr}`,
+          padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '10px',
+          zIndex: 10,
+        }}
+      >
+        <div
+          style={{
+            width: '40px', height: '40px',
+            background: C.faint, border: `1px solid ${C.bdr}`,
+            borderRadius: '8px', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', fontSize: '18px',
+            flexShrink: 0,
+          }}
+        >
+          🛍️
         </div>
-      )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '13px', fontWeight: 700, color: C.txt }}>Your order</div>
+          <div style={{ fontSize: '11px', color: C.muted }}>
+            {totalQty === 0 ? 'Add items to get started' : `${totalQty} item${totalQty > 1 ? 's' : ''} selected`}
+          </div>
+        </div>
+        <div style={{ fontSize: '14px', fontWeight: 700, color: C.txt, whiteSpace: 'nowrap' }}>
+          {formatVND(totalPrice)}
+        </div>
+        <button
+          disabled={totalQty === 0}
+          style={{
+            background: totalQty > 0 ? C.gold : C.faint,
+            border: 'none',
+            color: totalQty > 0 ? C.bg : C.muted,
+            fontSize: '13px', fontWeight: 800,
+            padding: '10px 16px', borderRadius: '8px',
+            cursor: totalQty > 0 ? 'pointer' : 'not-allowed',
+            fontFamily: 'inherit',
+            flexShrink: 0,
+          }}
+        >
+          View cart
+        </button>
+      </div>
     </div>
   );
 }
