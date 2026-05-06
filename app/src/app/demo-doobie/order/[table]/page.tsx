@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useMemo, use } from 'react';
+import { useState, useMemo, use, useEffect } from 'react';
 import {
   collection,
   addDoc,
   serverTimestamp,
+  onSnapshot,
+  doc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { doobieMenu, doobieStore } from '@/data/doobieMenu';
@@ -57,6 +59,13 @@ const TR = {
     callFailed: 'Failed to call staff',
     paymentFailed: 'Failed to request payment',
     retry: 'Please try again',
+    thankYou: 'Thank you!',
+    seeYouAgain: 'See you again',
+    thankYouSub: 'Disco nights, izakaya plates\n& natural wines',
+    returningIn: 'Returning to home in',
+    seconds: 'seconds',
+    second: 'second',
+    backToStart: '← Back to start',
   },
   ja: {
     table: 'テーブル',
@@ -105,6 +114,13 @@ const TR = {
     callFailed: 'スタッフ呼び出しに失敗しました',
     paymentFailed: '会計リクエストに失敗しました',
     retry: 'もう一度お試しください',
+    thankYou: 'ありがとうございました',
+    seeYouAgain: 'またのお越しを',
+    thankYouSub: 'ディスコの夜、居酒屋の料理\n＆ナチュラルワイン',
+    returningIn: 'トップに戻ります',
+    seconds: '秒後',
+    second: '秒後',
+    backToStart: '← 最初に戻る',
   },
   ko: {
     table: '테이블',
@@ -153,6 +169,13 @@ const TR = {
     callFailed: '호출 실패',
     paymentFailed: '결제 요청 실패',
     retry: '다시 시도해 주세요',
+    thankYou: '감사합니다',
+    seeYouAgain: '또 오세요',
+    thankYouSub: '디스코의 밤, 이자카야 요리\n& 내추럴 와인',
+    returningIn: '홈으로 돌아갑니다',
+    seconds: '초 후',
+    second: '초 후',
+    backToStart: '← 처음으로',
   },
   zh: {
     table: '桌号',
@@ -201,6 +224,13 @@ const TR = {
     callFailed: '呼叫失败',
     paymentFailed: '结账请求失败',
     retry: '请重试',
+    thankYou: '谢谢光临',
+    seeYouAgain: '欢迎再来',
+    thankYouSub: '迪斯科之夜、居酒屋料理\n& 自然葡萄酒',
+    returningIn: '即将返回首页',
+    seconds: '秒',
+    second: '秒',
+    backToStart: '← 返回首页',
   },
 } as const;
 
@@ -264,6 +294,45 @@ export default function DoobieOrderPage({
   const [orderedTotal, setOrderedTotal] = useState(0);
 
   const [errorMsg, setErrorMsg] = useState('');
+
+  // 会計監視用 state
+  const [pendingPaymentId, setPendingPaymentId] = useState<string | null>(null);
+  const [paymentDone, setPaymentDone] = useState(false);
+  const [countdown, setCountdown] = useState(8);
+
+  // 会計のステータス監視
+  useEffect(() => {
+    if (!pendingPaymentId) return;
+
+    const unsub = onSnapshot(
+      doc(db, 'demo_doobie_payments', pendingPaymentId),
+      (snapshot) => {
+        const data = snapshot.data();
+        if (data?.status === 'done') {
+          setPaymentDone(true);
+        }
+      }
+    );
+
+    return () => unsub();
+  }, [pendingPaymentId]);
+
+  // Thank You 画面のカウントダウン
+  useEffect(() => {
+    if (!paymentDone) return;
+
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          window.location.href = '/demo-doobie';
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [paymentDone]);
 
   const filteredItems = useMemo(() => {
     if (activeCategory === 'recommended') {
@@ -359,7 +428,7 @@ export default function DoobieOrderPage({
 
     setLoading(true);
     try {
-      await addDoc(collection(db, 'demo_doobie_payments'), {
+      const paymentRef = await addDoc(collection(db, 'demo_doobie_payments'), {
         tableNumber,
         items: orderedItems.map((c) => ({
           name: c.name,
@@ -373,6 +442,7 @@ export default function DoobieOrderPage({
         createdAt: serverTimestamp(),
       });
 
+      setPendingPaymentId(paymentRef.id);
       setPayDone(true);
     } catch (error) {
       console.error(error);
@@ -401,6 +471,127 @@ export default function DoobieOrderPage({
     cursor: 'pointer',
     fontFamily: "'Noto Sans JP', sans-serif",
   });
+
+  // Thank You 画面（会計完了時）
+  if (paymentDone) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#0a0a0a',
+          color: '#ffffff',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px 24px',
+          fontFamily: "'Noto Sans JP', sans-serif",
+          textAlign: 'center',
+          zIndex: 9999,
+        }}
+      >
+        <div style={{ fontSize: '80px', marginBottom: '24px' }}>🍜</div>
+
+        <div
+          style={{
+            fontSize: '36px',
+            fontWeight: 800,
+            color: C.gold,
+            letterSpacing: '0.05em',
+            marginBottom: '12px',
+          }}
+        >
+          {t.thankYou}
+        </div>
+
+        <div
+          style={{
+            fontSize: '20px',
+            color: C.txt,
+            marginBottom: '40px',
+          }}
+        >
+          {t.seeYouAgain}
+        </div>
+
+        <div
+          style={{
+            paddingTop: '32px',
+            paddingBottom: '32px',
+            borderTop: '1px dashed #444',
+            borderBottom: '1px dashed #444',
+            marginBottom: '32px',
+            width: '100%',
+            maxWidth: '320px',
+          }}
+        >
+          <div
+            style={{
+              fontSize: '18px',
+              fontWeight: 800,
+              letterSpacing: '0.1em',
+              color: C.gold,
+              marginBottom: '6px',
+              fontFamily: "'Courier New', monospace",
+            }}
+          >
+            {doobieStore.name}
+          </div>
+          <div
+            style={{
+              fontSize: '12px',
+              color: C.muted,
+              fontStyle: 'italic',
+            }}
+          >
+            {doobieStore.subtitle}
+          </div>
+        </div>
+
+        <div
+          style={{
+            fontSize: '13px',
+            color: C.muted,
+            marginBottom: '32px',
+            lineHeight: 1.6,
+            whiteSpace: 'pre-line',
+          }}
+        >
+          {t.thankYouSub}
+        </div>
+
+        <div
+          style={{
+            fontSize: '11px',
+            color: '#666',
+            marginBottom: '20px',
+          }}
+        >
+          {t.returningIn} {countdown} {countdown === 1 ? t.second : t.seconds}...
+        </div>
+
+        <button
+          onClick={() => {
+            window.location.href = '/demo-doobie';
+          }}
+          style={{
+            background: C.gold,
+            border: 'none',
+            color: C.bg,
+            fontSize: '13px',
+            fontWeight: 800,
+            padding: '12px 28px',
+            borderRadius: '10px',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+          }}
+        >
+          {t.backToStart}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div
