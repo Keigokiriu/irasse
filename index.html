@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="外国人客が多い飲食店向けのQRオペレーションSaaS。注文・呼び出し・会計・キッチン連携まで、QRひとつで整える。">
 <title>Irasse — いらっしゃいませ、を世界へ。</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -22,6 +23,7 @@
   --muted2: #7a6050;
   --green: #2a8a5a;
   --green-dim: rgba(42,138,90,0.1);
+  --red-dim: rgba(224,80,80,0.08);
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -63,6 +65,7 @@ nav {
   background: rgba(250,247,242,0.92);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
+  transition: box-shadow 0.3s;
 }
 
 .nav-logo {
@@ -139,7 +142,6 @@ nav {
   font-weight: 600;
   letter-spacing: 0.1em;
   margin-bottom: 28px;
-
 }
 
 .hero-badge::before {
@@ -164,25 +166,48 @@ nav {
   background: linear-gradient(135deg, #2a1f10 20%, var(--gold) 60%, var(--gold-light) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-
 }
 
 .hero-sub {
   font-family: 'Shippori Mincho', serif;
   font-size: clamp(16px, 2.5vw, 22px);
   color: var(--muted2);
-  margin-bottom: 32px;
+  margin-bottom: 36px;
   letter-spacing: 0.15em;
-
 }
 
-.hero-desc {
+.hero-headline {
+  font-family: 'Shippori Mincho', serif;
+  font-size: clamp(22px, 3.5vw, 34px);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.5;
+  margin-bottom: 20px;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-headline strong {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.hero-subhead {
   font-size: 16px;
   color: var(--muted2);
   line-height: 1.9;
-  max-width: 520px;
-  margin: 0 auto 48px;
+  max-width: 580px;
+  margin: 0 auto 24px;
+  font-weight: 500;
+}
 
+.hero-desc {
+  font-size: 14px;
+  color: var(--muted2);
+  line-height: 1.85;
+  max-width: 580px;
+  margin: 0 auto 48px;
 }
 
 .hero-actions {
@@ -190,7 +215,6 @@ nav {
   gap: 14px;
   justify-content: center;
   flex-wrap: wrap;
-
 }
 
 .btn-primary {
@@ -238,7 +262,6 @@ nav {
   gap: 40px;
   justify-content: center;
   margin-top: 60px;
-
 }
 
 .hero-stat-val {
@@ -284,7 +307,7 @@ section {
   font-size: 15px;
   color: var(--muted2);
   line-height: 1.8;
-  max-width: 560px;
+  max-width: 580px;
 }
 
 /* ── PROBLEM ── */
@@ -336,6 +359,103 @@ section {
 .problem-text strong {
   color: var(--text);
   font-weight: 700;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+/* ── BEFORE / AFTER ── */
+#transform {
+  border-top: 1px solid var(--border);
+}
+
+.transform-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  margin-top: 56px;
+  align-items: stretch;
+}
+
+.transform-col {
+  border-radius: 16px;
+  padding: 32px;
+  position: relative;
+}
+
+.transform-col.before {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+}
+
+.transform-col.after {
+  background: linear-gradient(160deg, #fff9f0, var(--surface));
+  border: 1px solid var(--gold);
+  box-shadow: 0 4px 24px rgba(200,131,42,0.08);
+}
+
+.transform-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.transform-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.transform-col.before .transform-label {
+  color: #c44;
+}
+
+.transform-col.after .transform-label {
+  color: var(--gold);
+}
+
+.transform-list {
+  list-style: none;
+}
+
+.transform-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--muted2);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.6;
+}
+
+.transform-list li:last-child { border-bottom: none; }
+
+.transform-col.before .transform-list li::before {
+  content: '✕';
+  color: #c44;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.transform-col.after .transform-list li::before {
+  content: '✓';
+  color: var(--green);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.transform-col.after .transform-list li {
+  color: var(--text);
+  font-weight: 500;
 }
 
 /* ── FEATURES ── */
@@ -343,11 +463,43 @@ section {
   border-top: 1px solid var(--border);
 }
 
-.features-grid {
+.features-section-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin: 56px 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.features-section-title::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--gold);
+}
+
+.features-section-desc {
+  font-size: 13px;
+  color: var(--muted2);
+  margin-bottom: 24px;
+  max-width: 600px;
+}
+
+.features-grid-main {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
-  margin-top: 56px;
+}
+
+.features-grid-extra {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
 }
 
 .feature-card {
@@ -360,6 +512,16 @@ section {
   overflow: hidden;
 }
 
+.feature-card.main {
+  border: 1.5px solid var(--gold);
+  background: linear-gradient(160deg, #fffaf2, var(--surface));
+}
+
+.feature-card.extra {
+  padding: 22px;
+  background: var(--surface);
+}
+
 .feature-card::before {
   content: '';
   position: absolute;
@@ -370,7 +532,7 @@ section {
 }
 
 .feature-card:hover {
-  border-color: rgba(200,131,42,0.4);
+  border-color: rgba(200,131,42,0.6);
   transform: translateY(-3px);
   box-shadow: 0 8px 32px rgba(200,131,42,0.08);
 }
@@ -383,22 +545,61 @@ section {
   display: block;
 }
 
+.feature-card.extra .feature-emoji {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
 .feature-title {
   font-family: 'Shippori Mincho', serif;
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 10px;
+  position: relative;
+}
+
+.feature-card.extra .feature-title {
+  font-size: 15px;
+  margin-bottom: 6px;
 }
 
 .feature-desc {
   font-size: 13px;
   color: var(--muted2);
   line-height: 1.75;
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.feature-card.extra .feature-desc {
+  font-size: 12px;
+  margin-bottom: 0;
+  line-height: 1.6;
+}
+
+.feature-scene {
+  font-size: 12px;
+  color: var(--muted2);
+  line-height: 1.6;
+  padding: 10px 12px;
+  background: var(--bg2);
+  border-radius: 8px;
+  border-left: 3px solid var(--gold);
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.feature-scene strong {
+  color: var(--gold);
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+  font-weight: 700;
 }
 
 .feature-tag {
   display: inline-block;
-  margin-top: 14px;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -406,6 +607,7 @@ section {
   background: var(--gold-dim);
   border-radius: 20px;
   padding: 3px 10px;
+  position: relative;
 }
 
 /* ── HOW IT WORKS ── */
@@ -474,11 +676,32 @@ section {
   border-top: 1px solid var(--border);
 }
 
+.pricing-prelude {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-top: 32px;
+  margin-bottom: 32px;
+  font-size: 14px;
+  color: var(--muted2);
+  line-height: 1.7;
+  text-align: center;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pricing-prelude strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
 .pricing-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
-  margin-top: 56px;
+  margin-top: 32px;
   align-items: start;
 }
 
@@ -619,7 +842,76 @@ section {
   border: 1px solid var(--border);
 }
 
-/* ── FAQ / CTA ── */
+/* ── FAQ ── */
+#faq {
+  border-top: 1px solid var(--border);
+}
+
+.faq-list {
+  margin-top: 56px;
+  max-width: 760px;
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--border);
+  padding: 4px 0;
+}
+
+.faq-item:first-child {
+  border-top: 1px solid var(--border);
+}
+
+.faq-question {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 22px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  transition: color 0.2s;
+}
+
+.faq-question:hover {
+  color: var(--gold);
+}
+
+.faq-question::after {
+  content: '+';
+  font-size: 24px;
+  font-weight: 300;
+  color: var(--gold);
+  transition: transform 0.3s;
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+.faq-item.open .faq-question::after {
+  transform: rotate(45deg);
+}
+
+.faq-answer {
+  font-size: 14px;
+  color: var(--muted2);
+  line-height: 1.8;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  padding: 0;
+}
+
+.faq-item.open .faq-answer {
+  max-height: 500px;
+  padding: 0 0 22px;
+}
+
+/* ── CTA ── */
 #cta {
   border-top: 1px solid var(--border);
   text-align: center;
@@ -662,6 +954,29 @@ section {
   margin-bottom: 36px;
   line-height: 1.8;
   position: relative;
+}
+
+.cta-trust {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 32px;
+  position: relative;
+}
+
+.cta-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted2);
+}
+
+.cta-trust-item::before {
+  content: '✓';
+  color: var(--green);
+  font-weight: 700;
 }
 
 /* ── FOOTER ── */
@@ -712,11 +1027,6 @@ footer {
   to   { opacity:1; transform:translateY(0); }
 }
 
-@keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position:  200% center; }
-}
-
 .reveal {
   opacity: 1;
   transform: translateY(0);
@@ -742,6 +1052,13 @@ footer {
   .hero-stats { gap: 24px; flex-wrap: wrap; }
   .steps::before { display: none; }
   footer { flex-direction: column; text-align: center; }
+  .transform-grid {
+    grid-template-columns: 1fr;
+  }
+  .transform-arrow {
+    transform: rotate(90deg);
+    padding: 12px 0;
+  }
 }
 </style>
 </head>
@@ -754,7 +1071,8 @@ footer {
     <li><a href="#features">機能</a></li>
     <li><a href="#howto">使い方</a></li>
     <li><a href="#pricing">料金</a></li>
-    <li><a href="#cta" class="nav-cta">無料で始める</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="mailto:hello@irasse.app?subject=Irasse%E3%81%AE%E3%83%87%E3%83%A2%E4%BE%9D%E9%A0%BC&body=%E5%BA%97%E8%88%97%E5%90%8D%EF%BC%9A%0A%E6%A5%AD%E6%85%8B%EF%BC%9A%0A%E5%B8%AD%E6%95%B0%EF%BC%9A%0A%E5%9B%B0%E3%81%A3%E3%81%A6%E3%81%84%E3%82%8B%E3%81%93%E3%81%A8%EF%BC%9A%0A" class="nav-cta">デモを依頼する</a></li>
   </ul>
 </nav>
 
@@ -762,15 +1080,22 @@ footer {
 <section id="hero">
   <div class="hero-glow"></div>
   <div>
-    <div class="hero-badge">🚀 現在ベータ版を無料提供中</div>
+    <div class="hero-badge">🚀 ベータ版・導入相談を受付中</div>
     <h1 class="hero-title display">Irasse</h1>
     <p class="hero-sub display">いらっしゃいませ、を世界へ。</p>
+    <p class="hero-headline display">
+      外国人客が多い店のオペレーションを、<br><strong>QRひとつ</strong>で整える。
+    </p>
+    <p class="hero-subhead">
+      注文・呼び出し・会計・キッチン連携まで。<br>
+      スタッフが少なくても、店がちゃんと回る。
+    </p>
     <p class="hero-desc">
-      QRコードひとつで、待ち・注文・会計・キッチンをすべてつなぐ。<br>
-      飲食店のオペレーションを、まるごとスマートにする次世代SaaS。
+      Irasseは、インバウンド対応が必要な小〜中規模飲食店向けのQRオペレーションSaaSです。<br>
+      アプリ不要。テーブルのQRを置くだけで、接客負担と伝達ミスを減らします。
     </p>
     <div class="hero-actions">
-      <a href="#cta" class="btn-primary">無料で始める →</a>
+      <a href="mailto:hello@irasse.app?subject=Irasse%E3%81%AE%E3%83%87%E3%83%A2%E4%BE%9D%E9%A0%BC&body=%E5%BA%97%E8%88%97%E5%90%8D%EF%BC%9A%0A%E6%A5%AD%E6%85%8B%EF%BC%9A%0A%E5%B8%AD%E6%95%B0%EF%BC%9A%0A%E5%9B%B0%E3%81%A3%E3%81%A6%E3%81%84%E3%82%8B%E3%81%93%E3%81%A8%EF%BC%9A%0A" class="btn-primary">デモを依頼する →</a>
       <a href="#features" class="btn-ghost">機能を見る</a>
     </div>
     <div class="hero-stats">
@@ -783,12 +1108,12 @@ footer {
         <div class="hero-stat-label">初期費用</div>
       </div>
       <div>
-        <div class="hero-stat-val display">8言語</div>
-        <div class="hero-stat-label">多言語対応</div>
+        <div class="hero-stat-val display">多言語</div>
+        <div class="hero-stat-label">対応・拡張可能</div>
       </div>
       <div>
-        <div class="hero-stat-val display">AI</div>
-        <div class="hero-stat-label">退席時間予測</div>
+        <div class="hero-stat-val display">アプリ不要</div>
+        <div class="hero-stat-label">QRひとつで完結</div>
       </div>
     </div>
   </div>
@@ -800,25 +1125,63 @@ footer {
 <section id="problem">
   <div class="reveal">
     <div class="section-tag">Problem</div>
-    <h2 class="section-title display">飲食店が抱える<br>4つの課題</h2>
-    <p class="section-desc">毎日の当たり前に潜むムダが、売上と体験を蝕んでいる。</p>
+    <h2 class="section-title display">こんな当たり前、<br>もうやめませんか？</h2>
+    <p class="section-desc">外国人客が多く、人手が少ないお店ほど、毎日の小さなムダが顧客体験と売上を削っている。</p>
   </div>
   <div class="problem-grid reveal">
     <div class="problem-item">
       <div class="problem-num">01</div>
-      <p class="problem-text"><strong>外国人客への対応に時間がかかる</strong><br>メニューの説明、注文の取り違え。言葉の壁が接客の質を下げている。</p>
+      <p class="problem-text"><strong>外国人客対応に時間が取られる</strong>翻訳アプリで説明する、片言英語でやりとりする、注文を取り違える。1組の対応に数倍の時間がかかり、他のお客様もお待たせしてしまう。</p>
     </div>
     <div class="problem-item">
       <div class="problem-num">02</div>
-      <p class="problem-text"><strong>待ち時間の管理が紙とアナログ</strong><br>外で待つお客様が不安。いつ席に案内されるかわからないストレスが離脱を招く。</p>
+      <p class="problem-text"><strong>注文・呼び出し・会計でスタッフが何度も往復</strong>「注文を取りに行く」「水を持って行く」「会計をする」。テーブルとレジを行ったり来たりで、少人数のスタッフはすぐに疲弊する。</p>
     </div>
     <div class="problem-item">
       <div class="problem-num">03</div>
-      <p class="problem-text"><strong>注文ミスと料理提供の遅れ</strong><br>キッチンへの伝達ロス。提供済みの管理がバラバラで、クレームの原因になる。</p>
+      <p class="problem-text"><strong>キッチンとホールで伝達ミスが起きる</strong>手書きの伝票が読めない、提供漏れ、注文の取り違え。クレームの原因のほとんどが、現場の連携の問題から起きている。</p>
     </div>
     <div class="problem-item">
       <div class="problem-num">04</div>
-      <p class="problem-text"><strong>売上・回転率が見えない</strong><br>感覚で運営するほかない。データがなければ改善もできない。</p>
+      <p class="problem-text"><strong>混雑時に待ち状況や回転が読めない</strong>「あと何分くらいですか?」に毎回曖昧に答える。外で待たされたお客様は気が変わって帰る。せっかくの集客が無駄になっている。</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- BEFORE / AFTER -->
+<section id="transform">
+  <div class="reveal">
+    <div class="section-tag">Before / After</div>
+    <h2 class="section-title display">毎日が、こう変わる。</h2>
+    <p class="section-desc">紙と感覚と片言の英語で回していたお店が、Irasse 一つでまるごと変わります。</p>
+  </div>
+  <div class="transform-grid reveal">
+    <div class="transform-col before">
+      <div class="transform-label">Before</div>
+      <ul class="transform-list">
+        <li>外国人客に通訳アプリで対応</li>
+        <li>注文・呼び出し・会計でスタッフが往復</li>
+        <li>キッチンに紙の伝票が散らばる</li>
+        <li>「あと何分？」に曖昧に答える</li>
+        <li>待ち客が外で立って待つ</li>
+        <li>レジ前に長蛇の列ができる</li>
+        <li>売上は感覚で把握する</li>
+      </ul>
+    </div>
+    <div class="transform-arrow">→</div>
+    <div class="transform-col after">
+      <div class="transform-label">After</div>
+      <ul class="transform-list">
+        <li>外国人客でも自分で注文できる</li>
+        <li>スタッフ呼び出しがワンタップで届く</li>
+        <li>キッチンに注文がすぐ流れる</li>
+        <li>会計依頼が事前に見える</li>
+        <li>混雑時も待ち状況を見せられる</li>
+        <li>レジ前の列がなくなる</li>
+        <li>売上と人気メニューが見える</li>
+      </ul>
     </div>
   </div>
 </section>
@@ -829,45 +1192,88 @@ footer {
 <section id="features">
   <div class="reveal">
     <div class="section-tag">Features</div>
-    <h2 class="section-title display">すべてが、ひとつに。</h2>
-    <p class="section-desc">QRコードを印刷して置くだけ。複雑な設定も専用端末も不要。</p>
+    <h2 class="section-title display">主役の4機能と、<br>必要な時に広がる機能。</h2>
+    <p class="section-desc">最初に必要な4つの機能と、お店が育つ中で追加できる拡張機能。お店に合わせて、必要なタイミングで機能を増やせます。</p>
   </div>
-  <div class="features-grid">
-    <div class="feature-card reveal">
+
+  <!-- 主役4機能 -->
+  <div class="reveal">
+    <div class="features-section-title">Core / 主役の4機能</div>
+    <p class="features-section-desc">注文・呼び出し・会計・キッチン連携。これだけで、店のオペレーションが回ります。</p>
+  </div>
+  <div class="features-grid-main">
+    <div class="feature-card main reveal">
       <span class="feature-emoji">📱</span>
-      <h3 class="feature-title display">QRで即座に注文</h3>
-      <p class="feature-desc">アプリのダウンロード不要。テーブルのQRを読むだけで多言語メニューが開く。カテゴリー管理・売り切れ設定もリアルタイムで反映。</p>
+      <h3 class="feature-title display">QRで即注文</h3>
+      <p class="feature-desc">テーブルのQRをスマホで読むだけ。多言語メニューから注文・確認まで全部完結。アプリ不要。</p>
+      <div class="feature-scene">
+        <strong>★ こんな場面で</strong>
+        外国人観光客でも自分のペースで注文できる
+      </div>
       <span class="feature-tag">アプリ不要</span>
     </div>
-    <div class="feature-card reveal">
-      <span class="feature-emoji">🤖</span>
-      <h3 class="feature-title display">AI退席時間予測</h3>
-      <p class="feature-desc">来店シーン・注文内容・着席時間をもとにAIがリアルタイムで退席を予測。外で待つお客様に「あと○分」が伝わる。</p>
-      <span class="feature-tag">独自機能</span>
+    <div class="feature-card main reveal">
+      <span class="feature-emoji">🌍</span>
+      <h3 class="feature-title display">多言語対応</h3>
+      <p class="feature-desc">日本語・英語・中国語・韓国語に標準対応。お店の客層に合わせて言語を追加することも可能です。</p>
+      <div class="feature-scene">
+        <strong>★ こんな場面で</strong>
+        観光地や外国人客が多い店で、接客効率が劇的に変わる
+      </div>
+      <span class="feature-tag">拡張可能</span>
     </div>
-    <div class="feature-card reveal">
-      <span class="feature-emoji">⏳</span>
-      <h3 class="feature-title display">ウェイティング管理</h3>
-      <p class="feature-desc">順番待ちをデジタル化。席が空いたらプッシュ通知。外で自由に待てるから離脱がなくなる。待ち時間のストレスをゼロに。</p>
-      <span class="feature-tag">スマホ通知</span>
+    <div class="feature-card main reveal">
+      <span class="feature-emoji">🔔</span>
+      <h3 class="feature-title display">スタッフ呼び出し</h3>
+      <p class="feature-desc">「お水ください」「テーブルを拭いて」など、よくある要望をワンタップで送信。アイコン化されて店側にも一目でわかる。</p>
+      <div class="feature-scene">
+        <strong>★ こんな場面で</strong>
+        手を挙げて呼ぶ必要がなく、外国人客でも気軽に呼べる
+      </div>
+      <span class="feature-tag">緊急度判定</span>
     </div>
-    <div class="feature-card reveal">
+    <div class="feature-card main reveal">
       <span class="feature-emoji">🧾</span>
-      <h3 class="feature-title display">スマートな会計</h3>
-      <p class="feature-desc">カード・PayPay・Apple Payに対応。現金払いも専用フローで食い逃げを防止。売上は自動集計されて経営データに変わる。</p>
+      <h3 class="feature-title display">スマート会計</h3>
+      <p class="feature-desc">テーブルから会計依頼を送信。スタッフはレシートをワンタップで印刷。レジに並ぶ必要なし。</p>
+      <div class="feature-scene">
+        <strong>★ こんな場面で</strong>
+        ピーク時のレジ詰まりが解消、会計待ちでお客様を逃さない
+      </div>
       <span class="feature-tag">食い逃げ防止</span>
     </div>
-    <div class="feature-card reveal">
+  </div>
+
+  <!-- 拡張機能 -->
+  <div class="reveal">
+    <div class="features-section-title">Extra / 必要なら広げられる拡張機能</div>
+    <p class="features-section-desc">お店の規模や運用に合わせて、必要なタイミングで追加できます。</p>
+  </div>
+  <div class="features-grid-extra">
+    <div class="feature-card extra reveal">
       <span class="feature-emoji">👨‍🍳</span>
-      <h3 class="feature-title display">キッチン連携（KDS）</h3>
-      <p class="feature-desc">注文が入ったらキッチン画面に即反映。提供済みをワンタップ管理。紙の伝票ゼロで料理の提供ミスをなくす。</p>
-      <span class="feature-tag">KDSシステム</span>
+      <h3 class="feature-title display">キッチン連携 (KDS)</h3>
+      <p class="feature-desc">注文がキッチン画面にリアルタイム反映。提供済みもワンタップ管理。</p>
     </div>
-    <div class="feature-card reveal">
+    <div class="feature-card extra reveal">
+      <span class="feature-emoji">⏳</span>
+      <h3 class="feature-title display">ウェイティング管理</h3>
+      <p class="feature-desc">店頭QRから順番待ちに登録。混雑度・待ち組数・想定待ち時間が即わかる。</p>
+    </div>
+    <div class="feature-card extra reveal">
+      <span class="feature-emoji">🤖</span>
+      <h3 class="feature-title display">AI退席時間予測</h3>
+      <p class="feature-desc">注文内容と過去データからAIが退席時間を予測。データが溜まるほど精度が上がる。</p>
+    </div>
+    <div class="feature-card extra reveal">
       <span class="feature-emoji">📊</span>
-      <h3 class="feature-title display">売上・予約の一元管理</h3>
-      <p class="feature-desc">売上・回転率・客単価をリアルタイムで確認。予約管理・プッシュ通知・メニュー編集・QRコード生成まですべてひとつの画面で。</p>
-      <span class="feature-tag">ダッシュボード</span>
+      <h3 class="feature-title display">売上・分析ダッシュボード</h3>
+      <p class="feature-desc">売上・回転率・客単価・人気メニューがリアルタイムで見える。改善の打ち手が数字でわかる。</p>
+    </div>
+    <div class="feature-card extra reveal">
+      <span class="feature-emoji">🛡️</span>
+      <h3 class="feature-title display">スタッフ認証 / メニュー管理</h3>
+      <p class="feature-desc">管理画面はパスコード保護。メニュー編集・QRコード生成も自分で完結。</p>
     </div>
   </div>
 </section>
@@ -878,24 +1284,24 @@ footer {
 <section id="howto">
   <div class="reveal">
     <div class="section-tag">How it works</div>
-    <h2 class="section-title display">導入は3ステップ</h2>
-    <p class="section-desc">ITの知識は不要。今日から始められる。</p>
+    <h2 class="section-title display">導入は3ステップ。</h2>
+    <p class="section-desc">ITの知識は不要。お申込みから、運用開始まで最短当日。</p>
   </div>
   <div class="steps reveal">
     <div class="step">
       <div class="step-num display">1</div>
       <h3 class="step-title display">アカウント作成</h3>
-      <p class="step-desc">店名・ロゴ・メニューを設定。<br>難しい操作は一切なし。</p>
+      <p class="step-desc">店名・ロゴ・メニューを<br>登録するだけ。<br>難しい設定は一切なし。</p>
     </div>
     <div class="step">
       <div class="step-num display">2</div>
       <h3 class="step-title display">QRを印刷</h3>
-      <p class="step-desc">テーブルごとのQRコードを<br>印刷してテーブルに置くだけ。</p>
+      <p class="step-desc">テーブル毎のQRコードを<br>自動生成。<br>A4で印刷して置くだけ。</p>
     </div>
     <div class="step">
       <div class="step-num display">3</div>
       <h3 class="step-title display">運用スタート</h3>
-      <p class="step-desc">お客様がQRを読み取れば<br>すべてが自動で動き始める。</p>
+      <p class="step-desc">お客様がQRを読み取れば<br>すべてが自動で動き出す。<br>あとはお店の本業に集中。</p>
     </div>
   </div>
 </section>
@@ -906,26 +1312,32 @@ footer {
 <section id="pricing">
   <div class="reveal">
     <div class="section-tag">Pricing</div>
-    <h2 class="section-title display">シンプルな料金体系</h2>
-    <p class="section-desc">初期費用ゼロ。いつでもプランを変更できる。</p>
+    <h2 class="section-title display">シンプルな料金体系。</h2>
+    <p class="section-desc">初期費用ゼロ・解約手数料ゼロ。お店に合わせて、いつでも変更できます。</p>
   </div>
+
+  <div class="pricing-prelude reveal">
+    <strong>まずはベータ版として、店舗に合わせた導入相談を優先しています。</strong><br>
+    詳しいプランや、お店に最適な機能の組み合わせはデモ時にご案内します。
+  </div>
+
   <div class="pricing-grid">
 
     <!-- FREE -->
     <div class="pricing-card reveal">
       <div class="pricing-plan">Free</div>
       <div class="pricing-price display">¥0<span>/月</span></div>
-      <p class="pricing-desc">まず試してみたい方に。機能制限なしで30日間無料。</p>
+      <p class="pricing-desc">まずは試してみたい方に。30日間無料、機能制限ありで体験できます。</p>
       <ul class="pricing-features">
         <li>QR注文・多言語対応</li>
-        <li>ウェイティング管理</li>
+        <li>スタッフ呼び出し</li>
         <li>会計・売上集計</li>
         <li>テーブル数 最大5席</li>
+        <li class="unavailable">ウェイティング管理</li>
         <li class="unavailable">KDS（キッチン連携）</li>
-        <li class="unavailable">予約管理</li>
-        <li class="unavailable">プッシュ通知</li>
+        <li class="unavailable">AI退席時間予測</li>
       </ul>
-      <a href="#cta" class="pricing-btn pricing-btn-ghost">無料で始める</a>
+      <a href="mailto:hello@irasse.app?subject=Irasse%E3%81%AE%E7%84%A1%E6%96%99%E3%83%88%E3%83%A9%E3%82%A4%E3%82%A2%E3%83%AB%E7%9B%B8%E8%AB%87&body=%E5%BA%97%E8%88%97%E5%90%8D%EF%BC%9A%0A%E6%A5%AD%E6%85%8B%EF%BC%9A%0A%E5%B8%AD%E6%95%B0%EF%BC%9A%0A%E8%A9%A6%E3%81%97%E3%81%A6%E3%81%BF%E3%81%9F%E3%81%84%E6%A9%9F%E8%83%BD%EF%BC%9A%0A" class="pricing-btn pricing-btn-ghost">無料トライアルを相談する</a>
     </div>
 
     <!-- STANDARD -->
@@ -936,14 +1348,14 @@ footer {
       <p class="pricing-desc">中小・個人飲食店にちょうどいい、必要な機能がすべて揃ったプラン。</p>
       <ul class="pricing-features">
         <li>QR注文・多言語対応</li>
-        <li>ウェイティング管理</li>
+        <li>スタッフ呼び出し</li>
         <li>会計・売上集計</li>
         <li>テーブル数 最大20席</li>
+        <li>ウェイティング管理</li>
         <li>KDS（キッチン連携）</li>
-        <li>予約管理</li>
-        <li>プッシュ通知</li>
+        <li>AI退席時間予測</li>
       </ul>
-      <a href="#cta" class="pricing-btn pricing-btn-primary">このプランで始める</a>
+      <a href="mailto:hello@irasse.app?subject=Irasse%E3%81%AE%E3%83%87%E3%83%A2%E4%BE%9D%E9%A0%BC&body=%E5%BA%97%E8%88%97%E5%90%8D%EF%BC%9A%0A%E6%A5%AD%E6%85%8B%EF%BC%9A%0A%E5%B8%AD%E6%95%B0%EF%BC%9A%0A%E5%9B%B0%E3%81%A3%E3%81%A6%E3%81%84%E3%82%8B%E3%81%93%E3%81%A8%EF%BC%9A%0A" class="pricing-btn pricing-btn-primary">デモを依頼する</a>
     </div>
 
     <!-- PRO -->
@@ -960,7 +1372,7 @@ footer {
         <li>専用カスタマーサポート</li>
         <li>API連携</li>
       </ul>
-      <a href="#cta" class="pricing-btn pricing-btn-ghost">お問い合わせ</a>
+      <a href="mailto:hello@irasse.app?subject=Irasse%20Pro%E3%83%97%E3%83%A9%E3%83%B3%E3%81%AE%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B&body=%E4%BC%9A%E7%A4%BE%E5%90%8D%EF%BC%9A%0A%E5%BA%97%E8%88%97%E6%95%B0%EF%BC%9A%0A%E3%81%94%E8%B3%AA%E5%95%8F%EF%BC%9A%0A" class="pricing-btn pricing-btn-ghost">お問い合わせ</a>
     </div>
 
   </div>
@@ -971,21 +1383,91 @@ footer {
 
 <hr class="divider">
 
+<!-- FAQ -->
+<section id="faq">
+  <div class="reveal">
+    <div class="section-tag">FAQ</div>
+    <h2 class="section-title display">よくあるご質問</h2>
+    <p class="section-desc">導入を検討するうえで、お店からよく聞かれることをまとめました。</p>
+  </div>
+  <div class="faq-list reveal">
+    <div class="faq-item">
+      <button class="faq-question">インバウンド対応が多い店に向いていますか？</button>
+      <div class="faq-answer">はい。Irasseは、多言語注文・呼び出し・会計の導線をひとつのQRにまとめることで、外国人対応の負担を大きく減らす設計になっています。観光地や外国人客が多い小〜中規模飲食店こそ、Irasseの効果が最も発揮される領域です。</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">海外で営業している日本人オーナーの店舗にも向いていますか？</button>
+      <div class="faq-answer">はい、相性が良いです。日本式の細やかな接客と多言語のオペレーションを両立したい海外の日系飲食店では、QRひとつで現地の言語・英語・日本語をスムーズに切り替えられます。少人数のスタッフでも回しやすく、現地のお客様にも違和感なく使っていただけます。</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">既存のレジやPOSと併用できますか？</button>
+      <div class="faq-answer">はい、Irasseはお会計の意思表示と内容確認をデジタル化するシステムです。実際の決済処理は既存のレジ・POSをそのままお使いいただけるので、設備投資なしで導入できます。スタッフはIrasseで会計内容を確認し、レジで実際の決済を行う流れになります。</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">スタッフへの教育は必要ですか？</button>
+      <div class="faq-answer">管理画面はとてもシンプルに作っています。「準備中にする」「提供済みにする」「会計完了」など、ボタンを押すだけで操作が完結します。導入時には簡単な操作マニュアルもお渡しするので、当日からスタッフが使えるようになります。</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">お客様の個人情報は集めますか？</button>
+      <div class="faq-answer">いいえ、お客様は名前もメールアドレスも入力する必要がありません。テーブル番号と注文内容だけを記録するので、個人情報の管理は発生しません。ウェイティング管理機能を使う場合のみ、お名前を入力していただきますが、その情報も後から自動削除する設定が可能です。</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">Wi-Fiが切れたらどうなりますか？</button>
+      <div class="faq-answer">基本機能はインターネット接続を必要とします。ただし、QRコードの読み取り後の注文画面は一定時間キャッシュで動作するので、瞬間的な通信障害でもお客様の操作は止まりません。安定したWi-Fi環境であれば、通常の運用で問題は発生しません。</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">メニューの変更は自分でできますか？</button>
+      <div class="faq-answer">はい、管理画面から自分でメニュー編集ができます。商品の追加・削除・価格変更・売り切れ表示などをリアルタイムで反映できます。写真の変更も画像をアップロードするだけで完了します。</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">複数店舗で利用したい場合は？</button>
+      <div class="faq-answer">Proプランでは複数店舗を一元管理できます。店舗ごとにメニュー・価格・スタッフ・QRコードを独立管理しつつ、本部からは全店舗の売上・分析を横断的に見ることができます。チェーン展開や系列店をお持ちの場合に最適です。</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">対応していない言語を追加できますか？</button>
+      <div class="faq-answer">はい、お店の客層に合わせて言語の追加が可能です。標準では日本語・英語・中国語・韓国語に対応していますが、ベトナム語・タイ語・フランス語など、ご要望に応じて拡張対応します。お問い合わせください。</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">途中で解約できますか？</button>
+      <div class="faq-answer">はい、いつでも解約可能です。解約手数料・違約金は一切発生しません。「合わない」と感じたらすぐ解約できるので、安心してお試しいただけます。</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- TARGET FIT -->
+<section id="target-fit" style="padding: 60px 24px; text-align: center;">
+  <div class="reveal" style="max-width: 760px; margin: 0 auto;">
+    <p style="font-family: 'Shippori Mincho', serif; font-size: clamp(18px, 2.5vw, 22px); line-height: 1.8; color: var(--text); font-weight: 600;">
+      外国人客が多い店、少人数運営の店、<br>
+      追加注文や呼び出しが多い店に<strong style="color: var(--gold);">特に向いています</strong>。
+    </p>
+  </div>
+</section>
+
 <!-- CTA -->
 <section id="cta" style="text-align:center;">
   <div class="cta-inner reveal">
     <div class="section-tag" style="display:block;margin-bottom:16px;">Get Started</div>
-    <h2 class="cta-title display">今すぐ、無料で始めよう。</h2>
+    <h2 class="cta-title display">お店に合わせた導入を、<br>一緒に考えます。</h2>
     <p class="cta-desc">
-      QRを印刷して置くだけ。今日から使える。<br>
-      導入に迷ったらまずお気軽にご相談ください。
+      まずはオンライン or 対面でデモをご覧ください。<br>
+      お店の規模・客層・人手の状況に合わせて、必要な機能の組み合わせをご提案します。<br>
+      無料トライアルや、まずは話を聞いてみたいだけ、もOKです。
     </p>
     <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative;">
-      <a href="/cdn-cgi/l/email-protection#f199949d9d9eb1988390828294df908181" class="btn-primary">無料で始める →</a>
-      <a href="/cdn-cgi/l/email-protection#bcd4d9d0d0d3fcd5ceddcfcfd992ddcccc" class="btn-ghost">📩 デモを依頼する</a>
+      <a href="mailto:hello@irasse.app?subject=Irasse%E3%81%AE%E3%83%87%E3%83%A2%E4%BE%9D%E9%A0%BC&body=%E5%BA%97%E8%88%97%E5%90%8D%EF%BC%9A%0A%E6%A5%AD%E6%85%8B%EF%BC%9A%0A%E5%B8%AD%E6%95%B0%EF%BC%9A%0A%E5%9B%B0%E3%81%A3%E3%81%A6%E3%81%84%E3%82%8B%E3%81%93%E3%81%A8%EF%BC%9A%0A" class="btn-primary">📩 デモを依頼する</a>
+      <a href="mailto:hello@irasse.app?subject=Irasse%E3%81%AE%E7%84%A1%E6%96%99%E3%83%88%E3%83%A9%E3%82%A4%E3%82%A2%E3%83%AB%E7%9B%B8%E8%AB%87&body=%E5%BA%97%E8%88%97%E5%90%8D%EF%BC%9A%0A%E6%A5%AD%E6%85%8B%EF%BC%9A%0A%E5%B8%AD%E6%95%B0%EF%BC%9A%0A%E8%A9%A6%E3%81%97%E3%81%A6%E3%81%BF%E3%81%9F%E3%81%84%E6%A9%9F%E8%83%BD%EF%BC%9A%0A" class="btn-ghost">無料トライアルについて相談する</a>
     </div>
-    <p style="margin-top:24px;font-size:12px;color:var(--muted);position:relative;">
-      <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9ef6fbf2f2f1def7ecffededfbb0ffeeee">[email&#160;protected]</a> までお気軽にどうぞ。
+    <div class="cta-trust">
+      <div class="cta-trust-item">クレジットカード不要</div>
+      <div class="cta-trust-item">いつでも解約可能</div>
+      <div class="cta-trust-item">サポート無料</div>
+    </div>
+    <p style="margin-top:32px;font-size:13px;color:var(--muted2);position:relative;">
+      気軽な相談はメールでもどうぞ：<br>
+      <a href="mailto:hello@irasse.app" style="color:var(--gold);text-decoration:none;font-weight:600;">hello@irasse.app</a>
     </p>
   </div>
 </section>
@@ -997,11 +1479,11 @@ footer {
   <ul class="footer-links">
     <li><a href="#">プライバシーポリシー</a></li>
     <li><a href="#">利用規約</a></li>
-    <li><a href="/cdn-cgi/l/email-protection#93fbf6fffffcd3fae1f2e0e0f6bdf2e3e3">お問い合わせ</a></li>
+    <li><a href="mailto:hello@irasse.app">お問い合わせ</a></li>
   </ul>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // Scroll reveal
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
@@ -1025,3 +1507,16 @@ window.addEventListener('scroll', () => {
     nav.style.boxShadow = 'none';
   }
 });
+
+// FAQ toggle
+document.querySelectorAll('.faq-question').forEach((q) => {
+  q.addEventListener('click', () => {
+    const item = q.parentElement;
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach((i) => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  });
+});
+</script>
+</body>
+</html>
