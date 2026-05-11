@@ -232,9 +232,64 @@ const TR = {
     second: '秒',
     backToStart: '← 返回首页',
   },
+  vi: {
+    table: 'Bàn',
+    bestOfDoobie: '★ Best of Doobie',
+    recommended: 'Gợi ý cho lần đầu đến',
+    order: 'Đặt món',
+    call: 'Gọi nhân viên',
+    bill: 'Hóa đơn',
+    confirm: 'Xác nhận đơn hàng',
+    back: '← Quay lại',
+    placeOrder: 'Đặt món ✓',
+    ordering: 'Đang gửi đơn...',
+    orderDone: 'Đã nhận đơn!',
+    orderDoneSub: 'Đã chuyển xuống bếp. Chúng tôi mang ra ngay nhé.',
+    seeReceipt: 'Xem hóa đơn',
+    addMore: 'Đặt thêm',
+    callTitle: 'Gọi nhân viên',
+    callSub: 'Chọn lý do rồi nhấn nút',
+    callMemo: 'Ghi chú (không bắt buộc)',
+    callBtn: '🔔 Gọi nhân viên',
+    callSent: 'Đã báo nhân viên',
+    callSentSub: 'Nhân viên sẽ đến ngay',
+    callWater: '💧 Cho tôi nước',
+    callOrder: '📋 Đổi đơn hàng',
+    callClean: '🧹 Lau bàn giúp',
+    callOther: '🔔 Khác',
+    receipt: 'Hóa đơn',
+    orderContents: 'Chi tiết đơn',
+    noOrder: 'Chưa có đơn',
+    payMethod: 'Thanh toán',
+    card: '💳 Thẻ',
+    cash: '💴 Tiền mặt',
+    payBtn: '💳 Thanh toán ngay',
+    payWaitCash: 'Nhân viên đang tới',
+    payWaitCashSub: 'Quý khách vui lòng ngồi chờ tại chỗ.\nNhân viên sẽ đến phục vụ.',
+    total: 'Tổng cộng',
+    confirm2: 'Xác nhận',
+    yourOrder: 'Đơn của bạn',
+    addItems: 'Hãy thêm món để bắt đầu',
+    itemsSelected: 'món đã chọn',
+    viewCart: 'Xem giỏ',
+    emptyCart: 'Giỏ hàng trống',
+    selectCallReason: 'Vui lòng chọn lý do',
+    noOrderToPay: 'Chưa có đơn để thanh toán',
+    orderFailed: 'Gửi đơn không thành công',
+    callFailed: 'Gọi nhân viên không thành công',
+    paymentFailed: 'Yêu cầu thanh toán không thành công',
+    retry: 'Vui lòng thử lại',
+    thankYou: 'Cảm ơn!',
+    seeYouAgain: 'Hẹn gặp lại',
+    thankYouSub: 'Đêm disco, món izakaya\n& rượu vang tự nhiên',
+    returningIn: 'Quay về trang chủ sau',
+    seconds: 'giây',
+    second: 'giây',
+    backToStart: '← Về trang đầu',
+  },
 } as const;
 
-type Lang = 'en' | 'ja' | 'ko' | 'zh';
+type Lang = 'en' | 'ja' | 'ko' | 'zh' | 'vi';
 
 const C = {
   bg: '#0a0a0a',
@@ -634,7 +689,7 @@ export default function DoobieOrderPage({
           )}
 
           <div style={{ display: 'flex', gap: '4px' }}>
-            {(['en', 'ja', 'ko', 'zh'] as Lang[]).map((l) => (
+            {(['en', 'ja', 'ko', 'zh', 'vi'] as Lang[]).map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
@@ -650,7 +705,7 @@ export default function DoobieOrderPage({
                   fontFamily: 'inherit',
                 }}
               >
-                {l === 'en' ? '🇺🇸' : l === 'ja' ? '🇯🇵' : l === 'ko' ? '🇰🇷' : '🇨🇳'}
+                {l === 'en' ? '🇺🇸' : l === 'ja' ? '🇯🇵' : l === 'ko' ? '🇰🇷' : l === 'zh' ? '🇨🇳' : '🇻🇳'}
               </button>
             ))}
           </div>
